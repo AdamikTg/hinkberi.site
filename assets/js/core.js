@@ -477,12 +477,11 @@
     banner.hidden = true;
     banner.innerHTML =
       '<h2 class="hb-consent-title" id="hb-consent-title">Карта и cookies</h2>' +
-      '<p>Сайт сам не использует cookies и аналитику. В разделе «О нас» есть карта сервиса «Яндекс Карты». ' + MAP_NOTE + '</p>' +
+      '<p>В разделе «О нас» есть карта Яндекса. Если её показать, ООО «ЯНДЕКС» получит ваш IP-адрес и может сохранить свои cookies, в том числе для рекламы. Сам сайт cookies не использует. <a href="' + policyHref('cookies') + '">Подробнее</a></p>' +
       '<p class="hb-consent-state" data-consent-state></p>' +
       '<div class="hb-consent-actions">' +
-        '<button type="button" class="hb-btn" data-consent-allow="banner">Разрешить карту</button>' +
+        '<button type="button" class="hb-btn" data-consent-allow="banner">Разрешить</button>' +
         '<button type="button" class="hb-btn hb-btn--line" data-consent-deny="banner">Отклонить</button>' +
-        '<a href="' + policyHref('cookies') + '">Подробнее</a>' +
       '</div>' +
       '<button type="button" class="hb-consent-close" data-consent-close aria-label="Закрыть" hidden>×</button>';
     document.body.appendChild(banner);

@@ -5,22 +5,24 @@
 */
 .hb-consent {
   position: fixed; z-index: 80; left: 16px; bottom: 16px;
-  width: min(460px, calc(100vw - 32px));
-  padding: 18px 18px 14px;
+  width: min(340px, calc(100vw - 32px));
+  padding: 14px 16px 12px;
   background: #FFFFFF; color: #1D201D;
   border: 2px solid #1D201D; border-radius: 8px;
-  font: 400 14px/1.5 'Golos Text', system-ui, sans-serif;
+  font: 400 13px/1.45 'Golos Text', system-ui, sans-serif;
 }
 .hb-consent[hidden] { display: none; }
-.hb-consent-title { margin: 0 0 6px; font: 400 24px/1.1 'Oswald', 'Arial Narrow', sans-serif; letter-spacing: -.005em; }
-.hb-consent p { margin: 0 0 12px; }
+.hb-consent-title { margin: 0 0 4px; font: 400 20px/1.1 'Oswald', 'Arial Narrow', sans-serif; letter-spacing: -.005em; }
+.hb-consent p { margin: 0 0 10px; }
+.hb-consent p a { color: #1D201D; text-underline-offset: 2px; white-space: nowrap; }
+.hb-consent p a:hover { color: #4F6B1C; }
 .hb-consent-state { color: #4F6B1C; font-weight: 500; }
 .hb-consent-state:empty { display: none; }
 .hb-consent-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; }
-.hb-consent-actions a { margin-left: 4px; padding: 10px 2px; color: #1D201D; text-underline-offset: 3px; }
+.hb-consent-actions a { margin-left: 2px; padding: 8px 2px; color: #1D201D; text-underline-offset: 3px; }
 .hb-consent-actions a:hover { color: #4F6B1C; }
 .hb-consent-close {
-  position: absolute; top: 8px; right: 8px; width: 40px; height: 40px;
+  position: absolute; top: 6px; right: 6px; width: 36px; height: 36px;
   display: grid; place-items: center; border: 0; border-radius: 8px; background: transparent;
   color: #1D201D; font: 400 24px/1 'Golos Text', system-ui, sans-serif; cursor: pointer;
 }
@@ -30,9 +32,9 @@
 /* Кнопки: равного размера, отказ так же доступен, как согласие */
 .hb-btn {
   display: inline-flex; align-items: center; justify-content: center;
-  height: 44px; padding: 0 18px; border-radius: 8px;
+  height: 38px; padding: 0 16px; border-radius: 8px;
   border: 2px solid #557420; background: #557420; color: #FFFFFF;
-  font: 500 14px/1 'Golos Text', system-ui, sans-serif; white-space: nowrap; cursor: pointer;
+  font: 500 13.5px/1 'Golos Text', system-ui, sans-serif; white-space: nowrap; cursor: pointer;
   transition: background-color .2s ease, border-color .2s ease, color .2s ease;
 }
 .hb-btn:hover { background: #445D19; border-color: #445D19; }
@@ -76,7 +78,8 @@
 .consent-settings .hb-consent-actions a { display: none; }
 
 @media (max-width: 720px) {
-  .hb-consent { left: 10px; right: 10px; bottom: 10px; width: auto; padding: 16px 14px 12px; }
+  .hb-consent { left: 10px; right: 10px; bottom: 10px; width: auto; padding: 14px 14px 10px; }
+  .hb-btn { height: 44px; font-size: 14px; }   /* на телефоне кнопки крупнее, чтобы легко попасть пальцем */
   .hb-consent-actions .hb-btn { flex: 1 1 auto; }
   .map-consent { padding: 16px; gap: 10px; }
   .map-consent strong { font-size: 22px; }

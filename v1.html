@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="ru" data-variant="1">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>ХинкБери, новое заведение в Москве</title>
+  <meta name="robots" content="noindex">
+  <meta name="description" content="ХинкБери: бургеры, роллы, закуски и кофе на Старокачаловской улице в Москве. Каждый день с 10:00 до 20:00.">
+  <meta name="theme-color" content="#FFFFFF">
+  <link rel="icon" type="image/png" href="assets/img/logo/logo-mark.png">
+  <link rel="stylesheet" href="assets/fonts/fonts.css">
+  <link rel="preload" as="image" href="assets/burger/lg/f001.webp">
+  <link rel="stylesheet" href="v1/style.css">
+  <link rel="stylesheet" href="assets/css/consent.css">
+</head>
+<body>
+  <div class="top-sentinel" aria-hidden="true"></div>
+  <a class="skip" href="#меню">Перейти к меню</a>
+
+  <header class="site-header">
+    <nav class="nav" aria-label="Разделы сайта">
+      <a href="#главная">Главная</a>
+      <a href="#меню">Меню</a>
+      <a href="#отзывы">Отзывы</a>
+      <a href="#онас">О нас</a>
+    </nav>
+    <a class="brand" href="#главная" aria-label="ХинкБери, на главную">
+      <img src="assets/img/logo/logo.png" alt="ХинкБери" width="528" height="296">
+    </a>
+    <div class="header-end">
+      <a class="pill pill--line" href="https://yandex.ru/maps/?rtext=~55.570706,37.578046" target="_blank" rel="noopener" data-icon="navigation-arrow">Маршрут</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero" id="главная" aria-label="Главная">
+      <div class="hero-stage">
+        <div class="hero-head">
+          <h1>Новое заведение в&nbsp;Москве</h1>
+          <p class="hero-sub" data-icon-before="map-pin">Старокачаловская ул., вл5А</p>
+        </div>
+        <div class="hero-burger">
+          <canvas class="burger-canvas" role="img" aria-label="Бургер собирается по слоям"></canvas>
+        </div>
+        <div class="hero-cta">
+          <a class="pill pill--fill" href="#меню">Смотреть меню</a>
+          <a class="pill pill--line" href="https://yandex.ru/maps/?rtext=~55.570706,37.578046" target="_blank" rel="noopener">Построить маршрут</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="tiles" aria-label="Коротко о нас">
+      <div class="tiles-grid">
+        <a class="tile tile--maps" href="https://yandex.ru/maps/org/169433331462/" target="_blank" rel="noopener">
+          <img class="tile-pin" src="assets/img/yandex-pin.png" alt="" width="100" height="125">
+          <span class="tile-text"><strong>Мы в Яндекс Картах</strong><small>Отзывы, фото и маршрут</small></span>
+        </a>
+        <a class="tile tile--photo" href="#кофе">
+          <img src="assets/img/menu/iced-urbech.webp" alt="" loading="lazy" width="600" height="600">
+          <span class="tile-text"><strong>Кофе с урбечом</strong><small>Наш фирменный</small></span>
+        </a>
+        <div class="tile tile--hours">
+          <span class="tile-icon" data-icon="clock"></span>
+          <span class="tile-text"><strong class="tile-big">10:00-20:00</strong><small>Каждый день</small></span>
+        </div>
+        <a class="tile tile--soon" href="#чуду">
+          <img class="mark" src="assets/img/logo/logo-mark.png" alt="" width="306" height="306">
+          <span class="tile-text"><strong>Скоро чуду</strong><small>Готовим к запуску</small></span>
+        </a>
+      </div>
+    </section>
+
+    <section class="menu" id="меню" aria-labelledby="menu-title">
+      <h2 class="section-title" id="menu-title">Меню</h2>
+      <div class="menu-bar">
+        <div class="menu-bar-inner">
+          <div class="chips" data-strip></div>
+          <button class="round" type="button" data-to-top aria-label="Наверх" data-icon="arrow-up"></button>
+        </div>
+      </div>
+      <div class="menu-body" data-menu></div>
+    </section>
+
+    <section class="reviews" id="отзывы" aria-labelledby="reviews-title">
+      <h2 class="section-title" id="reviews-title">Отзывы</h2>
+      <p class="rating"><span class="rating-num">4,7</span><span class="stars" data-stars></span><span>в Яндекс Картах</span></p>
+      <div class="quotes" data-quotes></div>
+      <a class="pill pill--line" href="https://yandex.ru/maps/org/169433331462/reviews/" target="_blank" rel="noopener" data-icon-after="arrow-up-right">Все отзывы в Яндексе</a>
+    </section>
+
+    <section class="about" id="онас" aria-labelledby="about-title">
+      <div class="about-text">
+        <h2 class="section-title" id="about-title">О нас</h2>
+        <p class="lead">Бургеры, роллы, закуски и настоящий кофе в одном месте. Готовим из свежих продуктов, мясо только халяль.</p>
+        <ul class="facts">
+          <li data-icon-before="map-pin">Старокачаловская ул., вл5А, Москва</li>
+          <li data-icon-before="clock">Каждый день с 10:00 до 20:00</li>
+        </ul>
+        <div class="about-cta">
+          <a class="pill pill--fill" href="https://yandex.ru/maps/?rtext=~55.570706,37.578046" target="_blank" rel="noopener" data-icon="navigation-arrow">Построить маршрут</a>
+          <a class="pill pill--line" href="https://yandex.ru/maps/org/169433331462/" target="_blank" rel="noopener">Открыть в Яндекс Картах</a>
+        </div>
+      </div>
+      <div class="about-map">
+        <iframe title="ХинкБери на карте" data-consent-src="https://yandex.ru/map-widget/v1/?ll=37.578046%2C55.570706&z=17&pt=37.578046%2C55.570706%2Cpm2grm" loading="lazy" allowfullscreen></iframe>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <img src="assets/img/logo/logo.png" alt="ХинкБери" width="528" height="296" loading="lazy">
+    <p class="slogan">Вкусно. Сытно. Для тебя.</p>
+    <p class="copy">© 2026 ХинкБери. Все права защищены.</p>
+    <nav class="footer-links" aria-label="Документы">
+      <a href="politika.html">Политика конфиденциальности</a>
+      <button type="button" data-consent-open>Настройки cookies</button>
+    </nav>
+  </footer>
+
+  <script src="assets/js/icons.js"></script>
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/core.js"></script>
+  <script src="v1/app.js"></script>
+</body>
+</html>

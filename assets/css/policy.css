@@ -1,0 +1,54 @@
+/* Страница политики: текст документа в стиле основного сайта (переменные из v4/style.css). */
+.doc {
+  max-width: 860px; margin: 0 auto;
+  padding: calc(var(--header) + clamp(40px, 6vw, 72px)) var(--side) clamp(72px, 9vw, 120px);
+}
+.doc h1 { font: 300 clamp(40px, 5.4vw, 68px)/1.02 var(--display); letter-spacing: -.01em; text-wrap: balance; }
+.doc-meta { margin-top: 16px; color: var(--ink-2); font-size: 15px; }
+.doc section { padding-top: clamp(44px, 5vw, 60px); }
+.doc h2 { margin-bottom: 18px; font: 400 clamp(28px, 3vw, 38px)/1.1 var(--display); letter-spacing: -.005em; }
+.doc h3 { margin-bottom: 12px; font: 400 22px/1.2 var(--display); }
+.doc p, .doc li { max-width: 72ch; font-size: 16px; line-height: 1.65; }
+.doc p + p { margin-top: 12px; }
+.doc ul { margin: 10px 0 12px; padding-left: 22px; }
+.doc li + li { margin-top: 6px; }
+.doc li::marker { color: var(--green-text); }
+.doc a { color: var(--green-text); text-underline-offset: 3px; }
+.doc strong { font-weight: 600; }
+
+/* Содержание */
+.doc-toc { margin-top: 36px; padding: 20px 24px; border: 2px solid var(--ink); border-radius: var(--r); }
+.doc-toc ol { margin: 0; padding-left: 22px; columns: 2; column-gap: 40px; }
+.doc-toc li { padding: 5px 0; break-inside: avoid; font-size: 15px; line-height: 1.4; }
+.doc-toc a { color: var(--ink); }
+.doc-toc a:hover { color: var(--green-text); }
+
+/* Сведения об операторе */
+.doc-facts { margin: 0 0 16px; border-top: 1px solid var(--line); }
+.doc-facts > div { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.doc-facts dt { color: var(--ink-2); font-size: 14px; line-height: 1.45; }
+.doc-facts dd { margin: 0; font-size: 16px; line-height: 1.5; }
+
+/* Цели обработки: мятные блоки */
+.doc-purpose { margin: 0 0 16px; padding: 20px 22px; background: var(--mint); border-radius: var(--r); }
+.doc-purpose dl { margin: 0; display: grid; gap: 10px; }
+.doc-purpose dl > div { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 14px; }
+.doc-purpose dt { font-size: 14px; font-weight: 600; line-height: 1.5; }
+.doc-purpose dd { margin: 0; font-size: 15px; line-height: 1.55; }
+
+/* Сведения, которые владелец должен заполнить: видно сразу, удаляется вместе с текстом в скобках */
+.fill {
+  padding: 1px 4px; border-radius: 4px;
+  background: var(--mint); color: var(--green-text); font-weight: 500;
+  box-shadow: inset 0 -2px 0 var(--green-text);
+}
+.fill::before { content: "["; } .fill::after { content: "]"; }
+.doc-purpose .fill { background: var(--white); }
+
+@media (max-width: 720px) {
+  .doc-toc { padding: 16px 18px; }
+  .doc-toc ol { columns: 1; }
+  .doc-facts > div, .doc-purpose dl > div { grid-template-columns: 1fr; gap: 2px; }
+  .doc-purpose { padding: 16px; }
+  .doc p, .doc li { font-size: 15.5px; }
+}

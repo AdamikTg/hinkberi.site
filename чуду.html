@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="ru" data-variant="4" data-clean-urls>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>ХинкБери, новое заведение в Северном Бутово</title>
+  <meta name="description" content="ХинкБери: бургеры, роллы, закуски и кофе на Старокачаловской улице в Северном Бутово, Москва. Каждый день с 10:00 до 20:00.">
+  <meta name="theme-color" content="#FFFFFF">
+  <link rel="canonical" href="/">
+  <link rel="icon" type="image/png" href="assets/img/logo/logo-mark.png">
+  <link rel="stylesheet" href="assets/fonts/fonts.css">
+  <link rel="preload" as="image" href="assets/burger/lg/f001.webp">
+  <link rel="stylesheet" href="v4/style.css">
+  <link rel="stylesheet" href="assets/css/consent.css">
+</head>
+<body>
+  <div class="top-sentinel" aria-hidden="true"></div>
+  <a class="skip" href="#меню">Перейти к меню</a>
+
+  <header class="site-header">
+    <nav class="nav" aria-label="Разделы сайта">
+      <a href="#главная">Главная</a>
+      <a href="#меню">Меню</a>
+      <a href="#отзывы">Отзывы</a>
+      <a href="#онас">О нас</a>
+    </nav>
+    <a class="brand" href="#главная" aria-label="ХинкБери, на главную">
+      <img src="assets/img/logo/logo.png" alt="ХинкБери" width="528" height="296">
+    </a>
+    <div class="header-end">
+      <a class="btn btn--green route" href="https://yandex.ru/maps/?rtext=~55.570706,37.578046" target="_blank" rel="noopener" aria-label="Построить маршрут в Яндекс Картах" data-icon="navigation-arrow"><span class="route-text">Маршрут</span></a>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero" id="главная" aria-label="Главная">
+      <div class="hero-stage">
+        <h1><span>Новое заведение в</span> <span>Северном Бутово</span></h1>
+        <div class="hero-burger">
+          <canvas class="burger-canvas" role="img" aria-label="Бургер собирается по слоям"></canvas>
+        </div>
+        <div class="hero-foot">
+          <p class="hero-where" data-icon-before="map-pin">Старокачаловская ул., вл5А</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="tiles" aria-label="Коротко о нас">
+      <div class="tiles-grid" data-tiles>
+        <a class="tile tile--maps" href="https://yandex.ru/maps/org/169433331462/" target="_blank" rel="noopener">
+          <img class="tile-pin" src="assets/img/yandex-maps.png" alt="" width="180" height="180">
+          <span class="tile-label">Мы в Яндекс Картах</span>
+        </a>
+        <a class="tile tile--photo" href="#кофе">
+          <img src="assets/img/menu/raf-urbech.webp" alt="" loading="lazy" width="640" height="640">
+          <span class="tile-label">Кофе с урбечом</span>
+        </a>
+        <a class="tile tile--hours" href="#онас">
+          <span class="tile-huge">10:00<br>20:00</span>
+          <span class="tile-label">Каждый день</span>
+        </a>
+        <a class="tile tile--soon" href="#чуду">
+          <img class="tile-chudu" src="assets/img/chudu-green.png" alt="" width="330" height="222">
+          <span class="tile-label">Скоро чуду</span>
+        </a>
+      </div>
+      <div class="tiles-nav">
+        <button class="sq sq--line" type="button" data-tiles-step="-1" aria-label="Листать плитки назад" data-icon="arrow-left"></button>
+        <button class="sq sq--line" type="button" data-tiles-step="1" aria-label="Листать плитки вперёд" data-icon="arrow-right"></button>
+      </div>
+    </section>
+
+    <section class="menu" id="меню" aria-labelledby="menu-title">
+      <h2 class="mega" id="menu-title">Меню</h2>
+      <div class="menu-bar">
+        <div class="menu-bar-inner">
+          <div class="chips" data-strip></div>
+          <button class="sq" type="button" data-to-top aria-label="Наверх" data-icon="arrow-up"></button>
+        </div>
+      </div>
+      <div class="menu-body" data-menu></div>
+    </section>
+
+    <section class="reviews" id="отзывы" aria-labelledby="reviews-title">
+      <div class="reviews-inner">
+        <div class="score">
+          <h2 class="mega mega--light" id="reviews-title">Отзывы</h2>
+          <p class="score-num">4,7</p>
+          <p class="score-cap"><span class="stars" data-stars></span>Рейтинг в Яндекс Картах</p>
+          <a class="btn btn--white" href="https://yandex.ru/maps/org/169433331462/reviews/" target="_blank" rel="noopener" data-icon-after="arrow-up-right">Все отзывы</a>
+        </div>
+        <div class="quotes" data-quotes></div>
+      </div>
+    </section>
+
+    <section class="about" id="онас" aria-labelledby="about-title">
+      <div class="about-text">
+        <h2 class="mega" id="about-title">О нас</h2>
+        <p class="lead">Бургеры, роллы, закуски и настоящий кофе в одном месте. Готовим из свежих продуктов, мясо только халяль.</p>
+        <ul class="facts">
+          <li data-icon-before="map-pin">Старокачаловская ул., вл5А, Москва</li>
+          <li data-icon-before="clock">Каждый день с 10:00 до 20:00</li>
+        </ul>
+        <div class="about-cta">
+          <a class="btn btn--green" href="https://yandex.ru/maps/?rtext=~55.570706,37.578046" target="_blank" rel="noopener" data-icon="navigation-arrow">Построить маршрут</a>
+          <a class="btn btn--line" href="https://yandex.ru/maps/org/169433331462/" target="_blank" rel="noopener">Открыть в Яндекс Картах</a>
+        </div>
+      </div>
+      <div class="about-map">
+        <iframe title="ХинкБери на карте" data-consent-src="https://yandex.ru/map-widget/v1/?ll=37.578046%2C55.570706&z=17&pt=37.578046%2C55.570706%2Cpm2grm" loading="lazy" allowfullscreen></iframe>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <img src="assets/img/logo/logo-white.png" alt="ХинкБери" width="528" height="296" loading="lazy">
+    <p class="slogan">Вкусно. Сытно. Для тебя.</p>
+    <p class="copy">© 2026 ХинкБери. Все права защищены.</p>
+    <nav class="footer-links" aria-label="Документы">
+      <a href="politika.html">Политика конфиденциальности</a>
+      <button type="button" data-consent-open>Настройки cookies</button>
+    </nav>
+  </footer>
+
+  <script src="assets/js/icons.js"></script>
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/core.js"></script>
+  <script src="v4/app.js"></script>
+</body>
+</html>

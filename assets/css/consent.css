@@ -1,0 +1,85 @@
+/*
+  Согласие на загрузку карты Яндекса: плашка, заглушка на месте карты, ссылки в подвале,
+  блок настроек на странице политики. Общий файл для всех страниц; цвета и формы основного сайта:
+  белый, мятный, тёмный текст, зелёный для действий, углы 8px, линии 2px, без теней.
+*/
+.hb-consent {
+  position: fixed; z-index: 80; left: 16px; bottom: 16px;
+  width: min(460px, calc(100vw - 32px));
+  padding: 18px 18px 14px;
+  background: #FFFFFF; color: #1D201D;
+  border: 2px solid #1D201D; border-radius: 8px;
+  font: 400 14px/1.5 'Golos Text', system-ui, sans-serif;
+}
+.hb-consent[hidden] { display: none; }
+.hb-consent-title { margin: 0 0 6px; font: 400 24px/1.1 'Oswald', 'Arial Narrow', sans-serif; letter-spacing: -.005em; }
+.hb-consent p { margin: 0 0 12px; }
+.hb-consent-state { color: #4F6B1C; font-weight: 500; }
+.hb-consent-state:empty { display: none; }
+.hb-consent-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; }
+.hb-consent-actions a { margin-left: 4px; padding: 10px 2px; color: #1D201D; text-underline-offset: 3px; }
+.hb-consent-actions a:hover { color: #4F6B1C; }
+.hb-consent-close {
+  position: absolute; top: 8px; right: 8px; width: 40px; height: 40px;
+  display: grid; place-items: center; border: 0; border-radius: 8px; background: transparent;
+  color: #1D201D; font: 400 24px/1 'Golos Text', system-ui, sans-serif; cursor: pointer;
+}
+.hb-consent-close:hover { background: #E9FFEA; }
+.hb-consent-close[hidden] { display: none; }
+
+/* Кнопки: равного размера, отказ так же доступен, как согласие */
+.hb-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  height: 44px; padding: 0 18px; border-radius: 8px;
+  border: 2px solid #557420; background: #557420; color: #FFFFFF;
+  font: 500 14px/1 'Golos Text', system-ui, sans-serif; white-space: nowrap; cursor: pointer;
+  transition: background-color .2s ease, border-color .2s ease, color .2s ease;
+}
+.hb-btn:hover { background: #445D19; border-color: #445D19; }
+.hb-btn--line { background: transparent; color: #1D201D; border-color: #1D201D; }
+.hb-btn--line:hover { background: #1D201D; border-color: #1D201D; color: #FFFFFF; }
+.hb-btn:focus-visible, .hb-consent-close:focus-visible, .footer-links a:focus-visible, .footer-links button:focus-visible {
+  outline: 3px solid #1D201D; outline-offset: 3px;
+}
+
+/* Заглушка на месте карты, пока посетитель не разрешил её загрузку */
+.map-slot { position: relative; }
+.map-consent {
+  position: absolute; inset: 0; z-index: 1;
+  display: grid; place-content: center; justify-items: center; gap: 12px;
+  padding: 24px; text-align: center;
+  background: #E9FFEA; color: #1D201D;
+  font: 400 15px/1.5 'Golos Text', system-ui, sans-serif;
+}
+.map-consent[hidden] { display: none; }
+.map-consent strong { font: 400 26px/1.1 'Oswald', 'Arial Narrow', sans-serif; font-weight: 400; }
+.map-consent p { max-width: 38ch; margin: 0; font-size: 14px; color: rgba(29, 32, 29, .74); }
+.map-consent a { color: #1D201D; font-size: 14px; text-underline-offset: 3px; padding: 6px 2px; }
+
+/* Ссылки в подвале: цвет берут от подвала, поэтому подходят и для зелёного, и для белого */
+.footer-links {
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 0 22px;
+  margin-top: 16px; font: 400 13px/1.3 'Golos Text', system-ui, sans-serif;
+}
+.footer-links a, .footer-links button {
+  padding: 12px 2px; background: none; border: 0; color: inherit; opacity: .9;
+  font: inherit; text-decoration: underline; text-underline-offset: 3px; cursor: pointer;
+}
+.footer-links a:hover, .footer-links button:hover { opacity: 1; }
+
+/* Блок выбора на странице политики */
+.consent-settings {
+  margin: 20px 0 8px; padding: 18px 20px;
+  background: #E9FFEA; border-radius: 8px;
+}
+.consent-settings p { margin: 0 0 12px; }
+.consent-settings .hb-consent-actions a { display: none; }
+
+@media (max-width: 720px) {
+  .hb-consent { left: 10px; right: 10px; bottom: 10px; width: auto; padding: 16px 14px 12px; }
+  .hb-consent-actions .hb-btn { flex: 1 1 auto; }
+  .map-consent { padding: 16px; gap: 10px; }
+  .map-consent strong { font-size: 22px; }
+}
+
+@media print { .hb-consent { display: none; } }

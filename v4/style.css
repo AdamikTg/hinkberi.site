@@ -11,6 +11,7 @@
   --green-text: #4F6B1C;     /* зелёный для мелкого текста на белом */
   --line: rgba(29, 32, 29, .12);
   --line-2: rgba(29, 32, 29, .18);
+  --hit: #D7261E;            /* красный только для плашки «Хит» (просьба владельца, 04.10.2026); с белым текстом контраст 5:1 */
   --ease: cubic-bezier(.16, 1, .3, 1);
   --display: 'Oswald', 'Arial Narrow', sans-serif;
   --text: 'Golos Text', system-ui, sans-serif;
@@ -157,6 +158,12 @@ a.tile:hover { transform: translateY(-4px); }
 }
 a.tile--photo:hover img { transform: scale(1.04); }
 .tile--photo .tile-label { margin-top: 10px; }
+/* Красная плашка «Хит» над напитком: отдельной строкой, а не поверх фото, чтобы на телефоне не закрывать чашку. */
+.tile-badge {
+  align-self: flex-start; flex: none; margin-bottom: 8px; padding: 5px 10px 4px; border-radius: 4px;
+  background: var(--hit); color: var(--white);
+  font: 500 15px/1 var(--display); letter-spacing: .08em; text-transform: uppercase;
+}
 .tiles-nav { display: none; }
 .tile--hours { background: var(--white); }
 .tile-huge { font: 300 clamp(56px, 6vw, 92px)/.92 var(--display); letter-spacing: -.01em; font-variant-numeric: tabular-nums; }
@@ -356,6 +363,7 @@ a.tile--photo:hover img { transform: scale(1.04); }
   .tile { flex: 0 0 max(150px, 44%); aspect-ratio: 1 / 1.08; padding: 14px; scroll-snap-align: start; }
   .tiles-nav { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
   .tile-label { font-size: 22px; }
+  .tile-badge { margin-bottom: 4px; padding: 4px 8px 3px; font-size: 13px; }
   .tile-huge { font-size: 50px; }
 
   .mega { font-size: clamp(52px, 16vw, 76px); }

@@ -158,7 +158,7 @@ a.tile:hover { transform: translateY(-4px); }
 }
 a.tile--photo:hover img { transform: scale(1.04); }
 .tile--photo .tile-label { margin-top: 10px; }
-/* Красная плашка «Хит» над напитком: отдельной строкой, а не поверх фото, чтобы на телефоне не закрывать чашку. */
+/* Красная плашка «Хит» над напитком, в левом верхнем углу плитки. */
 .tile-badge {
   align-self: flex-start; flex: none; margin-bottom: 8px; padding: 5px 10px 4px; border-radius: 4px;
   background: var(--hit); color: var(--white);
@@ -363,7 +363,8 @@ a.tile--photo:hover img { transform: scale(1.04); }
   .tile { flex: 0 0 max(150px, 44%); aspect-ratio: 1 / 1.08; padding: 14px; scroll-snap-align: start; }
   .tiles-nav { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
   .tile-label { font-size: 22px; }
-  .tile-badge { margin-bottom: 4px; padding: 4px 8px 3px; font-size: 13px; }
+  /* На телефоне как на ПК, только меньше: в углу плитки, фото напитка не уменьшается. */
+  .tile-badge { position: absolute; top: 10px; left: 10px; z-index: 1; margin: 0; padding: 3px 6px 2px; font-size: 11px; }
   .tile-huge { font-size: 50px; }
 
   .mega { font-size: clamp(52px, 16vw, 76px); }

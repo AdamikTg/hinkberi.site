@@ -1,18 +1,18 @@
 <!doctype html>
-<!-- Страница проверки: копия index.html с картой лояльности. Основной сайт её пока не показывает. -->
+<!-- Страница проверки: копия index.html с бонусами (вход, регистрация, баллы). Основной сайт их пока не показывает. -->
 <html lang="ru" data-variant="4" data-account>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="robots" content="noindex">
-  <title>Проверка: карта лояльности ХинкБери</title>
+  <title>Проверка: бонусы ХинкБери</title>
   <meta name="description" content="ХинкБери: бургеры, роллы, закуски и кофе на Старокачаловской улице в Северном Бутово, Москва. Каждый день с 10:00 до 20:00.">
   <meta name="theme-color" content="#FFFFFF">
   <link rel="canonical" href="/">
   <link rel="icon" type="image/png" href="assets/img/logo/logo-mark.png">
   <link rel="stylesheet" href="assets/fonts/fonts.css">
   <link rel="preload" as="image" href="assets/burger/lg/f001.webp">
-  <link rel="stylesheet" href="v4/style.css">
+  <link rel="stylesheet" href="Остальное/style.css">
   <link rel="stylesheet" href="assets/css/consent.css">
   <link rel="stylesheet" href="assets/css/account.css">
 </head>
@@ -31,9 +31,9 @@
       <img src="assets/img/logo/logo.png" alt="ХинкБери" width="528" height="296">
     </a>
     <div class="header-end">
-      <a class="btn btn--line acc-login" href="#карта" data-auth="login">Войти</a>
-      <a class="btn btn--green acc-join" href="#карта" data-auth="register">Регистрация</a>
-      <a class="btn btn--green acc-card" href="#карта" data-auth="card" hidden>Моя карта</a>
+      <button type="button" class="btn btn--line acc-login" data-auth="login" aria-haspopup="dialog">Войти</button>
+      <button type="button" class="btn btn--green acc-join" data-auth="register" aria-haspopup="dialog">Регистрация</button>
+      <button type="button" class="btn btn--green acc-card" data-auth="me" aria-haspopup="dialog" hidden><span class="acc-long">Мои баллы</span><span class="acc-short">Баллы</span></button>
     </div>
   </header>
 
@@ -131,7 +131,7 @@
   <script src="assets/js/icons.js"></script>
   <script src="assets/js/data.js"></script>
   <script src="assets/js/core.js"></script>
-  <script src="v4/app.js"></script>
+  <script src="Остальное/app.js"></script>
   <script src="assets/js/account.js"></script>
 </body>
 </html>

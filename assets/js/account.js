@@ -1,12 +1,12 @@
 /*
-  Карта лояльности: регистрация, вход и карта гостя с баллами.
+  Бонусы: регистрация, вход и баллы гостя.
   Работает только на странице с атрибутом data-account у <html>. Сейчас это проверка.html:
-  основной сайт (index.html) карту пока не показывает, там в шапке остаётся «Маршрут».
+  основной сайт (index.html) бонусы пока не показывает, там в шапке остаётся «Маршрут».
 
   Что делает скрипт:
-  - вместо «Маршрута» в шапке ставит «Войти» и «Регистрация», после входа «Моя карта»;
-  - после плиток вставляет блок «Карта лояльности»: правила, форма и карта гостя;
-  - пока гость печатает имя, оно сразу появляется на карте.
+  - под плитками ставит зелёную полосу «Получать бонусы и скидки» (по референсу владельца, 04.10.2026);
+  - полоса и кнопки «Войти» / «Регистрация» в шапке открывают окно с регистрацией и входом;
+  - после входа полоса показывает баллы и номер карты, окно показывает баллы и кнопку «Выйти».
   Правила начисления берутся из data.js (HB.loyalty).
   Вход по просьбе владельца по трём полям: имя, почта и пароль (04.10.2026).
 
@@ -20,8 +20,7 @@
   'use strict';
   if (!document.documentElement.hasAttribute('data-account')) return;
 
-  var H = window.HB, U = window.HBU, esc = U.esc, RULE = H.loyalty;
-  var SECTION = 'карта';
+  var H = window.HB, U = window.HBU, esc = U.esc, RULE = H.loyalty, icon = window.hbIcon;
   var FINE = !!(window.matchMedia && matchMedia('(pointer: fine)').matches);   // мышь: курсор можно сразу ставить в поле
 
   /* ---------- Слова и числа ---------- */
@@ -33,7 +32,8 @@
   }
   function pointsWord(n) { return plural(n, 'балл', 'балла', 'баллов'); }
   function group(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' '); }
-  function cardNo(n) { return n ? '№ ' + String(n).replace(/(\d{3})(?=\d)/g, '$1 ') : '№ ••• •••'; }
+  function nb(s) { return s.replace(/ /g, ' '); }        // число и слово не разрываются по строкам
+  function cardNo(n) { return nb('№ ' + String(n).replace(/(\d{3})(?=\d)/g, '$1 ')); }
   function cleanName(s) { return String(s || '').replace(/\s+/g, ' ').trim(); }
   function cleanEmail(s) { return String(s || '').trim().toLowerCase(); }
   function sameName(a, b) {
@@ -42,18 +42,16 @@
   }
   var EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
-  function nb(s) { return s.replace(/ /g, ' '); }        // число и слово не разрываются по строкам
   var EARN = nb(RULE.points + ' ' + pointsWord(RULE.points));      // «10 баллов»
   var PER = 'за каждые ' + nb(U.price(RULE.spend)) + ' покупки';  // «за каждые 100 ₽ покупки»
   var WORTH = nb('1 балл = ' + U.price(RULE.rub));                // «1 балл = 1 ₽»
-  var AT_TILL = 'кассир начислит баллы или спишет их в счёт оплаты.';
 
   /* ---------- Ошибки ---------- */
   function fail(code) { var e = new Error(code); e.code = code; return e; }
   var MESSAGES = {
-    credentials: 'Не нашли карту с таким именем, почтой и паролем. Проверьте их или зарегистрируйтесь.',
+    credentials: 'Не нашли аккаунт с таким именем, почтой и паролем. Проверьте их или зарегистрируйтесь.',
     exists: 'Эта почта уже зарегистрирована. Проверьте имя и пароль и нажмите «Войти».',
-    storage: 'Браузер не даёт сохранить карту. Выйдите из режима инкогнито и попробуйте ещё раз.',
+    storage: 'Браузер не даёт сохранить аккаунт. Выйдите из режима инкогнито и попробуйте ещё раз.',
     old: 'Этот браузер не умеет безопасно хранить пароль. Обновите его или откройте сайт в другом браузере.',
     unknown: 'Что-то пошло не так. Попробуйте ещё раз.'
   };
@@ -112,136 +110,121 @@
   };
   var store = demoStore;
 
-  /* ---------- Шапка: «Войти» и «Регистрация» вместо «Маршрута» ---------- */
-  /* В проверка.html эти ссылки уже вписаны в разметку, чтобы «Маршрут» не мелькал до запуска скрипта;
+  /* ---------- Шапка ---------- */
+  /* В проверка.html кнопки уже вписаны в разметку, чтобы «Маршрут» не мелькал до запуска скрипта;
      если страница без них, ставим их сами. */
   var end = document.querySelector('.header-end');
   if (!end.querySelector('[data-auth]')) {
     end.innerHTML =
-      '<a class="btn btn--line acc-login" href="#' + SECTION + '" data-auth="login">Войти</a>' +
-      '<a class="btn btn--green acc-join" href="#' + SECTION + '" data-auth="register">Регистрация</a>' +
-      '<a class="btn btn--green acc-card" href="#' + SECTION + '" data-auth="card" hidden>Моя карта</a>';
+      '<button type="button" class="btn btn--line acc-login" data-auth="login" aria-haspopup="dialog">Войти</button>' +
+      '<button type="button" class="btn btn--green acc-join" data-auth="register" aria-haspopup="dialog">Регистрация</button>' +
+      '<button type="button" class="btn btn--green acc-card" data-auth="me" aria-haspopup="dialog" hidden>' +
+        '<span class="acc-long">Мои баллы</span><span class="acc-short">Баллы</span></button>';
   }
   var head = { login: end.querySelector('.acc-login'), join: end.querySelector('.acc-join'), card: end.querySelector('.acc-card') };
 
-  /* ---------- Блок «Карта лояльности» после плиток ---------- */
-  var tiles = document.querySelector('.tiles');
-  tiles.classList.add('tiles--joined');
-  tiles.insertAdjacentHTML('afterend',
-    '<section class="loyalty" id="' + SECTION + '" aria-labelledby="loyalty-title">' +
-      '<div class="loyalty-panel">' +
-        '<h2 class="loyalty-title" id="loyalty-title" tabindex="-1">Карта лояльности</h2>' +
-        '<div class="lcard" role="img" data-card>' +
-          '<div class="lcard-top">' +
-            '<img class="lcard-logo" src="assets/img/logo/logo-white.png" alt="" width="528" height="296">' +
-            '<span class="lcard-no" data-card-no></span>' +
-          '</div>' +
-          '<p class="lcard-points"><span data-card-points>0</span><span class="lcard-unit" data-card-unit>баллов</span></p>' +
-          '<p class="lcard-name" data-card-name></p>' +
+  /* ---------- Зелёная полоса под плитками ---------- */
+  var tilesGrid = document.querySelector('.tiles-grid');
+  var tilesNav = document.querySelector('.tiles-nav');
+  (tilesNav || tilesGrid).insertAdjacentHTML('afterend',
+    '<button type="button" class="bonus" data-auth="banner" aria-haspopup="dialog">' +
+      '<img class="bonus-icon" src="assets/img/coins-white.png" alt="" width="99" height="96">' +
+      '<span class="bonus-text">' +
+        '<span class="bonus-title" data-bonus-title>Получать бонусы и скидки</span>' +
+        '<span class="bonus-sub" data-bonus-sub>Войдите, чтобы копить и тратить баллы</span>' +
+      '</span>' +
+      icon('caret-right', 'bonus-go') +
+    '</button>');
+  var banner = document.querySelector('.bonus');
+
+  /* ---------- Окно: регистрация, вход и баллы ---------- */
+  document.body.insertAdjacentHTML('beforeend',
+    '<dialog class="auth-dialog" aria-labelledby="auth-title">' +
+     '<div class="auth-box">' +
+      '<div class="auth-head">' +
+        '<h2 class="auth-title" id="auth-title" tabindex="-1">Бонусы и скидки</h2>' +
+        '<button type="button" class="auth-close" data-auth-close aria-label="Закрыть">' + icon('x') + '</button>' +
+      '</div>' +
+      '<form class="auth" data-part="form" novalidate>' +
+        '<p class="auth-rule">' + esc(EARN + ' ' + PER + '. ' + WORTH) + '.</p>' +
+        '<div class="auth-tabs" role="group" aria-label="Регистрация или вход">' +
+          '<button type="button" data-mode="register" aria-pressed="true">Регистрация</button>' +
+          '<button type="button" data-mode="login" aria-pressed="false">Вход</button>' +
         '</div>' +
-        '<div class="loyalty-body">' +
-          '<div class="loyalty-part" data-part="intro">' +
-            '<p class="loyalty-rule"><span class="loyalty-earn">' + esc(EARN) + '</span><span class="loyalty-per">' + esc(PER) + '</span></p>' +
-            '<p class="loyalty-sub">Баллами можно платить за новые заказы: ' + esc(WORTH) + '.</p>' +
-            '<div class="loyalty-actions">' +
-              '<a class="btn btn--green" href="#' + SECTION + '" data-auth="register">Регистрация</a>' +
-              '<a class="btn btn--line" href="#' + SECTION + '" data-auth="login">Войти</a>' +
-            '</div>' +
-            '<p class="loyalty-note">Покажите карту на кассе: ' + esc(AT_TILL) + '</p>' +
+        '<div class="field">' +
+          '<label for="auth-name">Имя</label>' +
+          '<input id="auth-name" name="name" autocomplete="given-name" maxlength="40" aria-describedby="auth-name-err">' +
+          '<p class="field-err" id="auth-name-err" hidden></p>' +
+        '</div>' +
+        '<div class="field">' +
+          '<label for="auth-email">Почта</label>' +
+          '<input id="auth-email" name="email" type="email" inputmode="email" autocomplete="email" autocapitalize="none" spellcheck="false" maxlength="120" aria-describedby="auth-email-err">' +
+          '<p class="field-err" id="auth-email-err" hidden></p>' +
+        '</div>' +
+        '<div class="field">' +
+          '<label for="auth-password">Пароль</label>' +
+          '<div class="pass">' +
+            '<input id="auth-password" name="password" type="password" autocomplete="new-password" maxlength="72" aria-describedby="auth-password-hint auth-password-err">' +
+            '<button class="pass-toggle" type="button" aria-controls="auth-password" aria-label="Показать пароль">Показать</button>' +
           '</div>' +
-          '<form class="auth loyalty-part" data-part="form" novalidate hidden aria-labelledby="loyalty-title">' +
-            '<div class="auth-tabs" role="group" aria-label="Регистрация или вход">' +
-              '<button type="button" data-mode="register" aria-pressed="true">Регистрация</button>' +
-              '<button type="button" data-mode="login" aria-pressed="false">Вход</button>' +
-            '</div>' +
-            '<div class="field">' +
-              '<label for="auth-name">Имя</label>' +
-              '<input id="auth-name" name="name" autocomplete="given-name" maxlength="40" aria-describedby="auth-name-err">' +
-              '<p class="field-err" id="auth-name-err" hidden></p>' +
-            '</div>' +
-            '<div class="field">' +
-              '<label for="auth-email">Почта</label>' +
-              '<input id="auth-email" name="email" type="email" inputmode="email" autocomplete="email" autocapitalize="none" spellcheck="false" maxlength="120" aria-describedby="auth-email-err">' +
-              '<p class="field-err" id="auth-email-err" hidden></p>' +
-            '</div>' +
-            '<div class="field">' +
-              '<label for="auth-password">Пароль</label>' +
-              '<div class="pass">' +
-                '<input id="auth-password" name="password" type="password" autocomplete="new-password" maxlength="72" aria-describedby="auth-password-hint auth-password-err">' +
-                '<button class="pass-toggle" type="button" aria-controls="auth-password" aria-label="Показать пароль">Показать</button>' +
-              '</div>' +
-              '<p class="field-hint" id="auth-password-hint">Не меньше 8 символов</p>' +
-              '<p class="field-err" id="auth-password-err" hidden></p>' +
-            '</div>' +
-            '<div class="check" data-only="register">' +
-              '<input id="auth-consent" name="consent" type="checkbox" aria-describedby="auth-consent-err">' +
-              '<label for="auth-consent">Даю согласие на обработку персональных данных по <a href="politika.html" target="_blank" rel="noopener">политике конфиденциальности</a></label>' +
-              '<p class="field-err" id="auth-consent-err" hidden></p>' +
-            '</div>' +
-            '<p class="auth-error" role="alert" hidden></p>' +
-            '<div class="auth-actions">' +
-              '<button class="btn btn--green" type="submit" data-submit>Зарегистрироваться</button>' +
-              '<button class="auth-cancel" type="button" data-auth-cancel>Отмена</button>' +
-            '</div>' +
-          '</form>' +
-          '<div class="loyalty-part" data-part="me" hidden>' +
-            '<p class="loyalty-sub" data-me-text></p>' +
-            '<p class="loyalty-small">' + esc(EARN + ' ' + PER + ', ' + WORTH) + '.</p>' +
-            '<div class="loyalty-actions"><button class="btn btn--line" type="button" data-auth-logout>Выйти</button></div>' +
-          '</div>' +
-          (store.demo ? '<p class="auth-demo">Проверочная версия: карта хранится только в этом браузере, кассир её пока не видит.</p>' : '') +
+          '<p class="field-hint" id="auth-password-hint">Не меньше 8 символов</p>' +
+          '<p class="field-err" id="auth-password-err" hidden></p>' +
+        '</div>' +
+        '<div class="check" data-only="register">' +
+          '<input id="auth-consent" name="consent" type="checkbox" aria-describedby="auth-consent-err">' +
+          '<label for="auth-consent">Даю согласие на обработку персональных данных по <a href="politika.html" target="_blank" rel="noopener">политике конфиденциальности</a></label>' +
+          '<p class="field-err" id="auth-consent-err" hidden></p>' +
+        '</div>' +
+        '<p class="auth-error" role="alert" hidden></p>' +
+        '<button class="btn btn--green auth-submit" type="submit" data-submit>Зарегистрироваться</button>' +
+      '</form>' +
+      '<div class="auth-me" data-part="me" hidden>' +
+        '<p class="me-points"><span data-me-points>0</span><span class="me-unit" data-me-unit>баллов</span></p>' +
+        '<p class="me-card" data-me-card></p>' +
+        '<p class="me-hint">Назовите номер или покажите это окно на кассе: кассир начислит баллы или спишет их в счёт оплаты.</p>' +
+        '<p class="me-rule">' + esc(EARN + ' ' + PER + ', ' + WORTH) + '.</p>' +
+        '<div class="me-actions">' +
+          '<button type="button" class="btn btn--green" data-auth-close>Готово</button>' +
+          '<button type="button" class="btn btn--line" data-auth-logout>Выйти</button>' +
         '</div>' +
       '</div>' +
-    '</section>');
+      (store.demo ? '<p class="auth-demo">Проверочная версия: аккаунт хранится только в этом браузере, кассир его пока не видит.</p>' : '') +
+     '</div>' +
+    '</dialog>');
 
-  var section = document.getElementById(SECTION);
-  var panel = section.querySelector('.loyalty-panel');
-  var title = panel.querySelector('.loyalty-title');
-  var form = panel.querySelector('form');
+  var dlg = document.querySelector('.auth-dialog');
+  var title = dlg.querySelector('.auth-title');
+  var form = dlg.querySelector('form');
   var submit = form.querySelector('[data-submit]');
-  var card = panel.querySelector('[data-card]');
-  var parts = {};
-  [].slice.call(panel.querySelectorAll('[data-part]')).forEach(function (p) { parts[p.getAttribute('data-part')] = p; });
-
-  var state = { user: null, view: 'intro', mode: 'register', busy: false, ready: false };
+  var parts = { form: form, me: dlg.querySelector('[data-part="me"]') };
+  var state = { user: null, view: 'form', mode: 'register', busy: false };
+  var opener = null;
 
   /* ---------- Отрисовка ---------- */
-  function paintCard() {
-    var u = state.user;
-    var name = u ? u.name : (state.view === 'form' ? cleanName(form.elements.name.value) : '');
-    var pts = u ? u.points : 0;
-    var nameEl = card.querySelector('[data-card-name]');
-    nameEl.textContent = name || 'Ваше имя';
-    nameEl.classList.toggle('is-empty', !name);
-    card.querySelector('[data-card-no]').textContent = cardNo(u && u.number);
-    card.querySelector('[data-card-points]').textContent = group(pts);
-    card.querySelector('[data-card-unit]').textContent = pointsWord(pts);
-    card.setAttribute('aria-label', u
-      ? 'Карта лояльности ХинкБери: ' + u.name + ', ' + cardNo(u.number) + ', ' + group(pts) + ' ' + pointsWord(pts)
-      : 'Так выглядит карта лояльности ХинкБери');
-  }
-
-  function paintHeader() {
-    var inside = !!state.user;
+  function paintOutside() {
+    var u = state.user, inside = !!u;
     head.login.hidden = inside;
     head.join.hidden = inside;
     head.card.hidden = !inside;
+    banner.querySelector('[data-bonus-title]').textContent = inside
+      ? 'У вас ' + nb(group(u.points) + ' ' + pointsWord(u.points))
+      : 'Получать бонусы и скидки';
+    banner.querySelector('[data-bonus-sub]').textContent = inside
+      ? 'Карта ' + cardNo(u.number) + '. Покажите её на кассе'
+      : 'Войдите, чтобы копить и тратить баллы';
   }
 
   function show(view) {
     state.view = view;
-    panel.setAttribute('data-view', view);   // на телефоне от состояния зависит, где стоит карта
-    Object.keys(parts).forEach(function (k) { parts[k].hidden = k !== view; });
-    title.textContent = view === 'me' ? 'Ваша карта' : 'Карта лояльности';
+    parts.form.hidden = view !== 'form';
+    parts.me.hidden = view !== 'me';
+    title.textContent = view === 'me' ? 'Ваши баллы' : 'Бонусы и скидки';
     if (view === 'me') {
-      parts.me.querySelector('[data-me-text]').textContent = state.user.name + ', ' +
-        (state.user.points ? 'покажите карту на кассе: ' : 'карта готова. Покажите её на кассе: ') + AT_TILL;
+      var u = state.user;
+      parts.me.querySelector('[data-me-points]').textContent = group(u.points);
+      parts.me.querySelector('[data-me-unit]').textContent = pointsWord(u.points);
+      parts.me.querySelector('[data-me-card]').textContent = u.name + ', карта ' + cardNo(u.number);
     }
-    paintCard();
-    paintHeader();
-    /* Короткое появление при смене состояния; при первой отрисовке без него. */
-    var part = parts[view];
-    if (state.ready) { part.classList.remove('is-entering'); void part.offsetWidth; part.classList.add('is-entering'); }
   }
 
   /* ---------- Форма ---------- */
@@ -269,7 +252,6 @@
       b.setAttribute('aria-pressed', String(b.getAttribute('data-mode') === mode));
     });
     form.querySelector('[data-only="register"]').hidden = !reg;
-    form.querySelector('#auth-password-hint').hidden = !reg;
     form.elements.password.setAttribute('autocomplete', reg ? 'new-password' : 'current-password');
     submit.textContent = label();
     clearErrors();
@@ -279,7 +261,7 @@
     state.busy = on;
     submit.disabled = on;
     submit.setAttribute('aria-busy', String(on));
-    submit.textContent = on ? (state.mode === 'register' ? 'Создаём карту…' : 'Входим…') : label();
+    submit.textContent = on ? (state.mode === 'register' ? 'Создаём аккаунт…' : 'Входим…') : label();
   }
 
   function check(d) {
@@ -289,21 +271,8 @@
     else if (!EMAIL.test(d.email)) bad.push(['email', 'Проверьте почту, например: anna@mail.ru']);
     if (!d.password) bad.push(['password', 'Введите пароль']);
     else if (reg && d.password.length < 8) bad.push(['password', 'Пароль должен быть не короче 8 символов']);
-    if (reg && !d.consent) bad.push(['consent', 'Без согласия мы не сможем завести карту']);
+    if (reg && !d.consent) bad.push(['consent', 'Без согласия мы не сможем завести аккаунт']);
     return bad;
-  }
-
-  function openForm(mode) {
-    setMode(mode);
-    show('form');
-    if (FINE) form.elements.name.focus({ preventScroll: true });
-  }
-
-  function toTop() {
-    var top = section.getBoundingClientRect().top;
-    if (top < 0 || top > window.innerHeight * 0.4) {
-      section.scrollIntoView({ block: 'start', behavior: document.documentElement.classList.contains('reduce') ? 'auto' : 'smooth' });
-    }
   }
 
   form.addEventListener('submit', function (e) {
@@ -327,9 +296,9 @@
       busy(false);
       form.elements.password.value = '';
       state.user = user;
+      paintOutside();
       show('me');
-      title.focus({ preventScroll: true });
-      toTop();
+      title.focus();
     }, function (err) {
       busy(false);
       var code = err && err.code;
@@ -340,15 +309,9 @@
   });
 
   form.addEventListener('input', function (e) {
-    var n = e.target.name;
-    if (FIELDS.indexOf(n) >= 0) fieldError(n, '');
-    if (n === 'name' && !state.user) paintCard();
+    if (FIELDS.indexOf(e.target.name) >= 0) fieldError(e.target.name, '');
   });
   form.addEventListener('change', function (e) { if (e.target.name === 'consent') fieldError('consent', ''); });
-
-  form.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape' && !state.busy) { e.preventDefault(); cancel(); }
-  });
 
   var toggle = form.querySelector('.pass-toggle');
   toggle.addEventListener('click', function () {
@@ -358,33 +321,51 @@
     toggle.setAttribute('aria-label', open ? 'Скрыть пароль' : 'Показать пароль');
   });
 
-  function cancel() {
+  /* ---------- Открыть и закрыть окно ---------- */
+  function open(what, from) {
+    opener = from || null;
+    if (state.user) show('me');
+    else { setMode(what === 'login' ? 'login' : 'register'); show('form'); }
+    if (!dlg.open) {
+      if (typeof dlg.showModal === 'function') dlg.showModal(); else dlg.setAttribute('open', '');
+      document.documentElement.classList.add('has-dialog');
+    }
+    /* С мышью сразу ставим курсор в первое поле; на телефоне клавиатура пусть не выскакивает сама. */
+    if (state.view === 'form' && FINE) form.elements.name.focus();
+    else title.focus();
+  }
+  function close() {
+    if (state.busy) return;
+    if (typeof dlg.close === 'function' && dlg.open) dlg.close(); else dlg.removeAttribute('open');
+  }
+  dlg.addEventListener('close', function () {
+    document.documentElement.classList.remove('has-dialog');
     form.elements.password.value = '';
     clearErrors();
-    show('intro');
-    var b = parts.intro.querySelector('[data-auth="register"]');
-    if (b) b.focus({ preventScroll: true });
-  }
+    /* Фокус возвращается туда, откуда окно открыли; если та кнопка скрылась (после выхода), на полосу. */
+    var back = opener && document.contains(opener) && !opener.hidden ? opener : banner;
+    back.focus({ preventScroll: true });
+    opener = null;
+  });
+  dlg.addEventListener('cancel', function (e) { if (state.busy) e.preventDefault(); });   // Esc во время входа не закрывает
+  /* Нажатие на затемнение вокруг окна закрывает его: всё содержимое лежит в .auth-box,
+     поэтому сам dialog получает щелчок только снаружи окна. */
+  dlg.addEventListener('click', function (e) { if (e.target === dlg) close(); });
 
-  /* ---------- Кнопки ---------- */
-  /* Ссылки «Войти», «Регистрация» и «Моя карта» ведут к блоку: прокрутку делает core.js,
-     здесь только выбираем, что в блоке показать. */
   document.addEventListener('click', function (e) {
-    var t = e.target.closest && e.target.closest('[data-auth], [data-mode], [data-auth-cancel], [data-auth-logout]');
+    var t = e.target.closest && e.target.closest('[data-auth], [data-mode], [data-auth-close], [data-auth-logout]');
     if (!t) return;
     if (t.hasAttribute('data-mode')) { if (!state.busy) setMode(t.getAttribute('data-mode')); return; }
-    if (t.hasAttribute('data-auth-cancel')) { cancel(); return; }
+    if (t.hasAttribute('data-auth-close')) { close(); return; }
     if (t.hasAttribute('data-auth-logout')) {
       store.signOut().then(function () {
         state.user = null;
-        show('intro');
-        title.focus({ preventScroll: true });
+        paintOutside();
+        close();
       });
       return;
     }
-    if (state.user) { if (state.view !== 'me') show('me'); return; }
-    var mode = t.getAttribute('data-auth');
-    if (mode === 'register' || mode === 'login') openForm(mode);
+    open(t.getAttribute('data-auth'), t);
   });
 
   /* Вход или выход в другой вкладке этого же браузера. */
@@ -392,14 +373,14 @@
     if (e.key !== SESSION && e.key !== USERS) return;
     store.current().then(function (u) {
       state.user = u;
-      show(u ? 'me' : (state.view === 'form' ? 'form' : 'intro'));
+      paintOutside();
+      if (dlg.open) show(u ? 'me' : 'form');
     });
   });
 
   /* ---------- Старт ---------- */
-  show('intro');
+  paintOutside();
   store.current().then(function (u) {
-    if (u) { state.user = u; show('me'); }
-    state.ready = true;
+    if (u) { state.user = u; paintOutside(); }
   });
 })();

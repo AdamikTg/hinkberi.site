@@ -1,70 +1,73 @@
 /*
-  Карта лояльности: «Войти» и «Регистрация» в шапке, блок с картой гостя между плитками и меню.
-  Подключается только вместе с assets/js/account.js (сейчас на странице проверки проверка.html).
+  Бонусы: «Войти» и «Регистрация» в шапке, зелёная полоса «Получать бонусы и скидки» под плитками
+  и окно с регистрацией, входом и баллами. Подключается только вместе с assets/js/account.js
+  (сейчас на странице проверки проверка.html).
   Мир сайта без изменений: белый, мятный, зелёный, текст #1D201D, угол 8px, линии 2px, без теней.
   Ошибки формы того же красного, что плашка «Хит» (--hit).
 */
-.header-end [hidden], .loyalty [hidden] { display: none !important; }
+.header-end [hidden], .auth-dialog [hidden] { display: none !important; }
+/* У кнопки-элемента свой серый фон браузера. :where не добавляет веса, поэтому заливка при наведении
+   из .btn--line:hover продолжает работать. */
+:where(.header-end, .auth-dialog) button.btn--line { background: transparent; }
 
 /* ---------- Шапка ---------- */
 .header-end { gap: 8px; }
+.acc-short { display: none; }
 
-/* ---------- Плитки и карта лояльности на одной мятной полосе ---------- */
-.tiles--joined { padding-bottom: 16px; }
-.loyalty { background: var(--mint); padding: 0 var(--side) clamp(56px, 8vw, 112px); scroll-margin-top: 16px; }
-.loyalty button.btn--line { background: transparent; }   /* у кнопки-элемента свой серый фон браузера */
-/* Карта стоит в строке тела, вровень с его первой строкой, и не сдвигается при смене состояния */
-.loyalty-panel {
-  max-width: 1360px; margin: 0 auto;
-  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  grid-template-areas: "title ." "body card"; grid-template-rows: auto 1fr;
-  gap: clamp(20px, 2.4vw, 32px) clamp(32px, 5vw, 88px);
-  padding: clamp(28px, 4vw, 56px);
-  background: var(--white); border-radius: var(--r);
+/* ---------- Зелёная полоса под плитками (по референсу владельца) ---------- */
+.bonus {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 18px;
+  width: 100%; max-width: 1360px; min-height: 88px; margin: 16px auto 0;
+  padding: 18px 22px 18px 24px;
+  border: 0; border-radius: var(--r); background: var(--block); color: var(--white);
+  text-align: left; cursor: pointer;
+  transition: transform .45s var(--ease), background-color .25s var(--ease);
 }
-.loyalty-title { grid-area: title; font: 400 clamp(38px, 4.2vw, 60px)/1 var(--display); letter-spacing: -.005em; }
-.loyalty-body { grid-area: body; min-width: 0; }
+/* Подъём при наведении как у плиток над ней; только для мыши, чтобы на телефоне не залипал после касания */
+@media (hover: hover) {
+  .bonus:hover { transform: translateY(-4px); }
+  .bonus:hover .bonus-go { transform: translateX(3px); }
+}
+.bonus:active { transform: translateY(1px); }
+.bonus-icon { width: 36px; height: auto; }
+.bonus-text { display: grid; gap: 4px; min-width: 0; }
+.bonus-title { font: 400 clamp(22px, 2vw, 28px)/1.1 var(--display); letter-spacing: .005em; }
+.bonus-sub { font: 400 15px/1.4 var(--text); color: var(--mint); }
+.bonus-go { width: 22px; height: 22px; transition: transform .25s var(--ease); }
 
-/* Правило крупно, как цена в меню: «10 баллов» и под ним «за каждые 100 ₽ покупки» */
-.loyalty-rule { display: grid; gap: 8px; }
-.loyalty-earn { font: 300 clamp(60px, 6.6vw, 96px)/.9 var(--display); letter-spacing: -.015em; font-variant-numeric: tabular-nums; }
-.loyalty-per { font: 300 clamp(24px, 2.3vw, 34px)/1.1 var(--display); }
-.loyalty-sub { margin-top: 22px; max-width: 36ch; font-size: clamp(17px, 1.4vw, 19px); line-height: 1.5; }
-[data-part="me"] .loyalty-sub { margin-top: 0; }
-.loyalty-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
-.loyalty-note, .loyalty-small { margin-top: 18px; max-width: 46ch; font-size: 14px; line-height: 1.5; color: var(--ink-2); }
+/* ---------- Окно ---------- */
+html.has-dialog { overflow: hidden; scrollbar-gutter: stable; }   /* страница под окном не листается и не сдвигается */
+.auth-dialog {
+  width: min(460px, calc(100vw - 32px)); max-width: none; max-height: calc(100dvh - 32px);
+  padding: 0; border: 2px solid var(--ink); border-radius: var(--r);
+  background: var(--white); color: var(--ink);
+  overflow: auto; overscroll-behavior: contain;
+}
+.auth-dialog::backdrop { background: rgba(29, 32, 29, .5); }
+.auth-box { padding: 20px 24px 24px; }
+.auth-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.auth-title { font: 400 32px/1.05 var(--display); letter-spacing: -.005em; }
+.auth-close {
+  flex: none; display: grid; place-items: center; width: 44px; height: 44px; margin-right: -10px;
+  border: 0; border-radius: var(--r); background: transparent; color: var(--ink); cursor: pointer;
+  transition: background-color .2s var(--ease);
+}
+.auth-close:hover { background: var(--mint); }
+.auth-close .icon { width: 22px; height: 22px; }
 .auth-demo {
-  display: inline-block; margin-top: 22px; padding: 8px 12px; border-radius: var(--r);
+  margin-top: 18px; padding: 8px 12px; border-radius: var(--r);
   background: var(--mint); font-size: 13px; line-height: 1.45;
 }
 
-/* ---------- Карта гостя: зелёная, пропорции пластиковой карты, логотип как есть ---------- */
-.lcard {
-  grid-area: card; align-self: start; justify-self: end;
-  width: 100%; max-width: 480px; aspect-ratio: 1.586;
-  display: grid; grid-template-rows: auto minmax(0, 1fr) auto;
-  padding: clamp(18px, 2.2vw, 30px);
-  background: var(--block); color: var(--white); border-radius: var(--r);
+/* Появление окна: только короткое проявление 0,2 с; при «меньше движения» его нет */
+@media (prefers-reduced-motion: no-preference) {
+  .auth-dialog[open], .auth-dialog[open]::backdrop { animation: auth-in .2s var(--ease) both; }
 }
-.lcard-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
-.lcard-logo { height: clamp(34px, 3.4vw, 48px); width: auto; }
-.lcard-no {
-  margin-top: 4px; font: 500 14px/1.2 var(--text); color: var(--mint);
-  font-variant-numeric: tabular-nums; white-space: nowrap;
-}
-.lcard-points {
-  align-self: center; display: flex; align-items: baseline; gap: 10px;
-  font: 300 clamp(56px, 6vw, 96px)/1 var(--display); letter-spacing: -.01em; font-variant-numeric: tabular-nums;
-}
-.lcard-unit { font: 400 clamp(20px, 2vw, 28px)/1 var(--display); letter-spacing: 0; }
-.lcard-name {
-  min-width: 0; font: 500 clamp(15px, 1.3vw, 17px)/1.25 var(--text);
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
-.lcard-name.is-empty { color: var(--mint); }
+@keyframes auth-in { from { opacity: 0; } }
 
 /* ---------- Форма регистрации и входа ---------- */
-.auth { display: grid; gap: 16px; max-width: 460px; }
+.auth { display: grid; gap: 16px; }
+.auth-rule { font-size: 14.5px; line-height: 1.45; color: var(--ink-2); }
 .auth-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
 .auth-tabs button {
   height: 44px; border: 2px solid var(--line-2); border-radius: var(--r); background: var(--white);
@@ -123,47 +126,47 @@
 .check .field-err { grid-column: 2; }
 
 .auth-error { padding: 12px 14px; border: 2px solid var(--hit); border-radius: var(--r); font: 500 14px/1.45 var(--text); }
-.auth-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 22px; margin-top: 4px; }
-.auth-actions .btn { min-width: 210px; }
-.auth-actions .btn:disabled { cursor: progress; opacity: .75; }
-.auth-cancel {
-  height: 44px; padding: 0 2px; border: 0; background: none; cursor: pointer;
-  font: 500 14.5px/1 var(--text); color: var(--ink); text-decoration: underline; text-underline-offset: 4px;
-}
-.auth-cancel:hover { color: var(--green-text); }
+.auth-submit { width: 100%; margin-top: 2px; }
+.auth-submit:disabled { cursor: progress; opacity: .75; }
 
-/* Смена состояния блока: только короткое проявление 0,2 с, как у смены состояния кнопок;
-   при «меньше движения» его нет */
-@media (prefers-reduced-motion: no-preference) {
-  .loyalty-part.is-entering { animation: loyalty-in .2s var(--ease) both; }
+/* ---------- Баллы после входа ---------- */
+.auth-me { display: grid; gap: 12px; }
+.me-points {
+  display: flex; align-items: baseline; gap: 10px;
+  font: 300 72px/1 var(--display); letter-spacing: -.01em; font-variant-numeric: tabular-nums;
 }
-@keyframes loyalty-in { from { opacity: 0; } }
+.me-unit { font: 400 26px/1 var(--display); letter-spacing: 0; }
+.me-card { font: 600 17px/1.35 var(--text); font-variant-numeric: tabular-nums; }
+.me-hint { font-size: 15px; line-height: 1.5; }
+.me-rule { font-size: 14px; line-height: 1.45; color: var(--ink-2); }
+.me-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 6px; }
+.me-actions .btn { flex: 1 1 auto; }
 
-/* ---------- Планшет: те же две колонки, теснее ---------- */
-@media (max-width: 1024px) {
-  .loyalty-panel { column-gap: 28px; }
-}
-
-/* ---------- Телефон: карта под заголовком, в шапке одна кнопка «Войти» ---------- */
+/* ---------- Телефон: в шапке одна кнопка, окно на весь экран ---------- */
 @media (max-width: 720px) {
   .header-end .acc-join { display: none; }
   .header-end .acc-login { background: var(--block); border-color: var(--block); color: var(--white); }
   .header-end .btn { padding: 0 14px; }
-  .loyalty-panel {
-    grid-template-columns: minmax(0, 1fr); grid-template-areas: "title" "card" "body"; grid-template-rows: auto;
-    row-gap: 20px; padding: 22px 18px 26px;
+
+  .bonus { min-height: 76px; margin-top: 14px; padding: 14px 14px 14px 16px; gap: 12px; }
+  .bonus-icon { width: 30px; }
+  .bonus-title { font-size: 21px; }
+  .bonus-sub { font-size: 13.5px; }
+
+  .auth-dialog {
+    width: 100%; max-width: 100%; height: 100%; height: 100dvh; max-height: 100%; max-height: 100dvh;
+    margin: 0; border: 0; border-radius: 0;
   }
-  /* До входа карта-образец идёт после кнопок, чтобы её «0 баллов» не стоял прямо над «10 баллов».
-     В форме и после входа карта сразу под заголовком: на ней видно имя, пока его печатают. */
-  .loyalty-panel[data-view="intro"] { grid-template-areas: "title" "body" "card"; }
-  .lcard { justify-self: stretch; max-width: none; }
-  .loyalty-actions .btn { flex: 1 1 auto; }
-  .auth-actions .btn { flex: 1 1 100%; min-width: 0; }
+  .auth-box { padding: 0 16px 28px; }
+  .auth-head { position: sticky; top: 0; z-index: 1; margin: 0 -16px 10px; padding: 10px 16px; background: var(--white); }
+  .me-points { font-size: 64px; }
 }
-/* Узкий телефон: карта теряет строгие пропорции, чтобы баллы и имя не наезжали друг на друга */
 @media (max-width: 380px) {
   .header-end .btn { padding: 0 12px; font-size: 13.5px; }
-  .lcard { aspect-ratio: auto; min-height: 172px; row-gap: 10px; padding: 16px; }
-  .lcard-logo { height: 30px; }
-  .lcard-points { font-size: 48px; }
+  .acc-long { display: none; }
+  .acc-short { display: inline; }
+  .bonus { gap: 10px; padding: 12px 12px 12px 14px; }
+  .bonus-icon { width: 26px; }
+  .bonus-title { font-size: 19px; }
+  .bonus-sub { font-size: 13px; }
 }

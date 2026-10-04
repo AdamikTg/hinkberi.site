@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ru" data-variant="4" data-clean-urls>
+<html lang="ru" data-variant="4" data-clean-urls data-account>
 <head>
   <meta charset="utf-8">
   <base href="/">
@@ -13,6 +13,7 @@
   <link rel="preload" as="image" href="assets/burger/lg/f001.webp">
   <link rel="stylesheet" href="Остальное/style.css">
   <link rel="stylesheet" href="assets/css/consent.css">
+  <link rel="stylesheet" href="assets/css/account.css">
 </head>
 <body>
   <div class="top-sentinel" aria-hidden="true"></div>
@@ -29,7 +30,9 @@
       <img src="assets/img/logo/logo.png" alt="ХинкБери" width="528" height="296">
     </a>
     <div class="header-end">
-      <a class="btn btn--green route" href="https://yandex.ru/maps/?rtext=~55.570706,37.578046" target="_blank" rel="noopener" aria-label="Построить маршрут в Яндекс Картах" data-icon="navigation-arrow"><span class="route-text">Маршрут</span></a>
+      <button type="button" class="btn btn--line acc-login" data-auth="login" aria-haspopup="dialog">Войти</button>
+      <button type="button" class="btn btn--green acc-join" data-auth="register" aria-haspopup="dialog">Регистрация</button>
+      <button type="button" class="btn btn--green acc-card" data-auth="me" aria-haspopup="dialog" hidden><span class="acc-long">Мои баллы</span><span class="acc-short">Баллы</span></button>
     </div>
   </header>
 
@@ -128,5 +131,6 @@
   <script src="assets/js/data.js"></script>
   <script src="assets/js/core.js"></script>
   <script src="Остальное/app.js"></script>
+  <script src="assets/js/account.js"></script>
 </body>
 </html>

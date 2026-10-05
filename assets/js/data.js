@@ -40,7 +40,7 @@ window.HB = {
     hours: 'Каждый день с 10:00 до 20:00',
     hoursShort: '10:00-20:00',
     slogan: 'Вкусно. Сытно. Для тебя.',
-    rating: '4,7',
+    rating: '4,8',
     mapsOrg: 'https://yandex.ru/maps/org/169433331462/',
     mapsReviews: 'https://yandex.ru/maps/org/169433331462/reviews/',
     mapsRoute: 'https://yandex.ru/maps/?rtext=~55.570706,37.578046',

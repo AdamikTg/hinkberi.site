@@ -29,6 +29,8 @@
   - фото Бургера куриного и Бургера говядина заменены на присланные владельцем 05.10.2026 (на белом фоне,
     файлы burger-chicken-2 и burger-beef-2);
   - часы работы 10:00-20:00 назвал владелец 02.10.2026;
+  - бонусы работают по-настоящему с 06.10.2026: аккаунты и баллы на сервере в Yandex Cloud (loyalty.api ниже),
+    кассир начисляет и списывает баллы на странице кассир.html;
   - рейтинг и отзывы: пробный сайт hink-beri.vercel.app и Яндекс Карты.
   Пункты с пометкой verify: true прочитаны с мелкой фотографии, их стоит сверить.
 */
@@ -145,10 +147,11 @@ window.HB = {
     }
   ],
 
-  /* Карта лояльности (правила от владельца, 04.10.2026): 10 баллов за каждые 100 ₽ покупки,
-     1 балл = 1 ₽ скидки. Ещё не уточнено: сколько баллов за сумму не кратную 100 (250 ₽: 20 или 25)
-     и какую часть заказа можно оплатить баллами. Показывается пока только на странице проверки. */
-  loyalty: { spend: 100, points: 10, rub: 1 },
+  /* Бонусы (правила от владельца, 04-06.10.2026): 10 баллов за каждые 100 ₽, считается пропорционально,
+     то есть 1 балл за каждые полные 10 ₽ (250 ₽ = 25 баллов); 1 балл = 1 ₽ скидки. Баллы начисляются на часть
+     чека, оплаченную деньгами. Баллы считает сервер (папка «сервер/бонусы»), здесь числа только для текстов
+     и для подсказки кассиру. api: адрес сервера бонусов в Yandex Cloud, где лежат аккаунты и баллы. */
+  loyalty: { spend: 100, points: 10, rub: 1, api: 'https://functions.yandexcloud.net/d4e0nj5itggf5hdcs0hp' },
 
   reviews: [
     { name: 'Сепиева Эвелина', text: 'Теперь мы всегда будем приходить сюда за шикарным кофе. Персонал очень добрый и отзывчивый.' },
@@ -161,6 +164,26 @@ window.HB = {
 window.HBU = {
   price: function (n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' ₽'; },
   photo: function (id) { return id ? 'assets/img/menu/' + id + '.webp' : null; },
+  /* Запрос к серверу бонусов. Тело text/plain, чтобы браузер не делал лишний предварительный запрос.
+     Ошибка приходит как Error с полем code: credentials, exists, locked, auth, too_much, not_found,
+     not_last, too_late, bad, server, network (нет связи или сервер не ответил за 25 секунд). */
+  api: function (body) {
+    function fail(code) { var e = new Error(code); e.code = code; return e; }
+    if (!window.fetch) return Promise.reject(fail('old'));
+    var ctl = window.AbortController ? new AbortController() : null;
+    var stop = ctl && setTimeout(function () { ctl.abort(); }, 25000);
+    return fetch(HB.loyalty.api, {
+      method: 'POST', cache: 'no-store', signal: ctl ? ctl.signal : undefined,
+      headers: { 'Content-Type': 'text/plain;charset=UTF-8' }, body: JSON.stringify(body)
+    }).then(function (r) {
+      return r.json().catch(function () { return null; }).then(function (d) {
+        clearTimeout(stop);
+        if (!r.ok) throw fail((d && d.error) || 'server');
+        if (!d) throw fail('network');   // ответ оборвался на середине
+        return d;
+      });
+    }, function () { clearTimeout(stop); throw fail('network'); });
+  },
   esc: function (s) {
     return String(s).replace(/[&<>"]/g, function (c) {
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];

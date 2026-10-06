@@ -4,6 +4,7 @@
   на основном сайте (index.html, с 04.10.2026).
   Мир сайта без изменений: белый, мятный, зелёный, текст #1D201D, угол 8px, линии 2px, без теней.
   Ошибки формы того же красного, что плашка «Хит» (--hit).
+  С 06.10.2026 в окне «Ваши баллы» есть последние операции и удаление аккаунта.
 */
 .header-end [hidden], .auth-dialog [hidden] { display: none !important; }
 /* У кнопки-элемента свой серый фон браузера. :where не добавляет веса, поэтому заливка при наведении
@@ -54,10 +55,6 @@ html.has-dialog { overflow: hidden; scrollbar-gutter: stable; }   /* стран�
 }
 .auth-close:hover { background: var(--mint); }
 .auth-close .icon { width: 22px; height: 22px; }
-.auth-demo {
-  margin-top: 18px; padding: 8px 12px; border-radius: var(--r);
-  background: var(--mint); font-size: 13px; line-height: 1.45;
-}
 
 /* Появление окна: только короткое проявление 0,2 с; при «меньше движения» его нет */
 @media (prefers-reduced-motion: no-preference) {
@@ -126,6 +123,7 @@ html.has-dialog { overflow: hidden; scrollbar-gutter: stable; }   /* стран�
 .check .field-err { grid-column: 2; }
 
 .auth-error { padding: 12px 14px; border: 2px solid var(--hit); border-radius: var(--r); font: 500 14px/1.45 var(--text); }
+.auth-note { padding: 12px 14px; border-radius: var(--r); background: var(--mint); font: 500 14px/1.45 var(--text); }
 .auth-submit { width: 100%; margin-top: 2px; }
 .auth-submit:disabled { cursor: progress; opacity: .75; }
 
@@ -141,6 +139,30 @@ html.has-dialog { overflow: hidden; scrollbar-gutter: stable; }   /* стран�
 .me-rule { font-size: 14px; line-height: 1.45; color: var(--ink-2); }
 .me-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 6px; }
 .me-actions .btn { flex: 1 1 auto; }
+
+/* Последние операции: строки через линию 2px, баллы справа зелёным */
+.me-ops { margin-top: 12px; padding-top: 16px; border-top: 2px solid var(--line); }
+.me-ops-title { margin-bottom: 4px; font: 400 22px/1.1 var(--display); letter-spacing: .005em; }
+.me-ops-list { list-style: none; margin: 0; padding: 0; }
+.me-op { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 14px; padding: 10px 0; }
+.me-op + .me-op { border-top: 2px solid var(--line); }
+.me-op-what { font: 600 15px/1.35 var(--text); font-variant-numeric: tabular-nums; }
+.me-op-pts {
+  grid-row: span 2; align-self: center;
+  font: 400 26px/1 var(--display); color: var(--green-text); font-variant-numeric: tabular-nums;
+}
+.me-op-when { font-size: 13.5px; line-height: 1.4; color: var(--ink-2); }
+.me-ops-empty { padding: 6px 0 2px; font-size: 14px; line-height: 1.45; color: var(--ink-2); }
+
+/* Удаление аккаунта: тихая ссылка внизу, чтобы не нажали случайно */
+.me-delete {
+  justify-self: start; margin-top: 2px; padding: 10px 0;
+  border: 0; background: none; cursor: pointer;
+  font: 500 14px/1.2 var(--text); color: var(--ink-2);
+  text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px;
+}
+.me-delete:hover { color: var(--ink); }
+.del-text { font-size: 15px; line-height: 1.5; }
 
 /* ---------- Телефон: в шапке одна кнопка, окно на весь экран ---------- */
 @media (max-width: 720px) {

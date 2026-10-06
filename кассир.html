@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="ru" data-page="till">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Касса бонусов | ХинкБери</title>
+  <!-- Страница для кассиров (hinkberi.site/кассир, просьба владельца 06.10.2026): в поиске её быть не должно. -->
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#FFFFFF">
+  <link rel="icon" type="image/png" href="assets/img/logo/logo-mark.png">
+  <link rel="stylesheet" href="assets/fonts/fonts.css?v=60861682">
+  <link rel="stylesheet" href="Остальное/style.css?v=231d9ec2">
+  <link rel="stylesheet" href="assets/css/account.css?v=9b5def1f">
+  <link rel="stylesheet" href="assets/css/cashier.css?v=5f9f746f">
+</head>
+<body>
+  <header class="till-head">
+    <a class="till-brand" href="index.html" aria-label="ХинкБери, на сайт">
+      <img src="assets/img/logo/logo.png" alt="ХинкБери" width="528" height="296">
+    </a>
+    <p class="till-name">Касса бонусов</p>
+    <button type="button" class="btn btn--line till-out" data-out hidden>Выйти</button>
+  </header>
+
+  <main class="till">
+    <!-- Вход кассира -->
+    <section class="till-login" data-view="login" aria-labelledby="login-title">
+      <h1 class="till-title" id="login-title" tabindex="-1">Касса бонусов</h1>
+      <p class="till-lead">Введите пароль кассира. Вход действует 12 часов, потом пароль спросят снова.</p>
+      <form class="auth" data-login novalidate>
+        <p class="auth-note" role="status" data-login-note hidden></p>
+        <div class="field">
+          <label for="till-password">Пароль кассира</label>
+          <div class="pass">
+            <input id="till-password" name="password" type="password" autocomplete="current-password" autocapitalize="none" spellcheck="false" maxlength="72" aria-describedby="till-password-err">
+            <button class="pass-toggle" type="button" aria-controls="till-password" aria-label="Показать пароль">Показать</button>
+          </div>
+          <p class="field-err" id="till-password-err" hidden></p>
+        </div>
+        <button class="btn btn--green till-wide" type="submit" data-login-submit>Войти</button>
+      </form>
+    </section>
+
+    <!-- Работа кассира -->
+    <div class="till-work" data-view="work" hidden>
+      <h1 class="sr" id="work-title" tabindex="-1">Касса бонусов</h1>
+
+      <section class="till-find" aria-labelledby="find-title">
+        <h2 class="till-h" id="find-title">Карта гостя</h2>
+        <form class="till-row" data-find novalidate>
+          <label class="sr" for="till-card">Номер карты, 6 цифр</label>
+          <input class="till-num" id="till-card" name="card" inputmode="numeric" autocomplete="off" maxlength="7" placeholder="123 456" aria-describedby="till-card-hint till-card-err">
+          <button class="btn btn--green till-go" type="submit" data-find-submit>Найти</button>
+        </form>
+        <p class="field-hint till-hint" id="till-card-hint">Гость называет номер или показывает его на сайте в окне «Ваши баллы».</p>
+        <p class="field-err till-hint" id="till-card-err" role="alert" hidden></p>
+      </section>
+
+      <section class="till-guest" aria-label="Гость" aria-live="polite" data-guest hidden></section>
+
+      <section class="till-check" aria-labelledby="check-title">
+        <h2 class="till-h" id="check-title">Чек</h2>
+        <p class="till-wait" data-wait>Сначала найдите карту гостя.</p>
+        <form data-check novalidate>
+          <fieldset class="till-fields" data-check-fields disabled>
+            <legend class="sr">Сумма чека и баллы</legend>
+            <p class="auth-note" role="status" data-check-note hidden></p>
+            <div class="field">
+              <label for="till-amount">Сумма чека</label>
+              <div class="till-unit">
+                <input class="till-num" id="till-amount" name="amount" inputmode="numeric" autocomplete="off" maxlength="7" aria-describedby="till-amount-err">
+                <span aria-hidden="true">₽</span>
+              </div>
+              <p class="field-err" id="till-amount-err" hidden></p>
+            </div>
+            <div class="field">
+              <label for="till-spend">Сколько баллов списать</label>
+              <input class="till-num" id="till-spend" name="spend" inputmode="numeric" autocomplete="off" maxlength="7" value="0" aria-describedby="till-spend-hint till-spend-err">
+              <div class="till-quick">
+                <button type="button" class="opt" data-spend="0">Не списывать</button>
+                <button type="button" class="opt" data-spend="max">Все доступные</button>
+              </div>
+              <p class="field-hint" id="till-spend-hint"></p>
+              <p class="field-err" id="till-spend-err" hidden></p>
+            </div>
+            <dl class="till-sum">
+              <div class="till-sum-main"><dt>Гость платит</dt><dd data-sum-pay>0 ₽</dd></div>
+              <div><dt>Списываем</dt><dd data-sum-spend>0 баллов</dd></div>
+              <div><dt>Начислим</dt><dd class="till-plus" data-sum-earn>0 баллов</dd></div>
+              <div><dt>Станет на карте</dt><dd data-sum-after>0 баллов</dd></div>
+            </dl>
+            <p class="auth-error" role="alert" data-check-error hidden></p>
+            <button class="btn btn--green till-wide" type="submit" data-check-submit>Провести чек</button>
+          </fieldset>
+        </form>
+        <div class="till-done" data-done tabindex="-1" hidden></div>
+      </section>
+
+      <section class="till-history" aria-labelledby="hist-title">
+        <h2 class="till-h" id="hist-title">Последние операции</h2>
+        <ul class="me-ops-list" data-hist></ul>
+        <p class="me-ops-empty" data-hist-empty>Найдите карту гостя: здесь появятся его последние покупки.</p>
+      </section>
+    </div>
+  </main>
+
+  <script src="assets/js/data.js?v=badb7d0e"></script>
+  <script src="assets/js/cashier.js?v=f68bf4c5"></script>
+</body>
+</html>

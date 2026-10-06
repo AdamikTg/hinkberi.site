@@ -10,11 +10,12 @@
   Правила начисления берутся из data.js (HB.loyalty).
   Вход по просьбе владельца по трём полям: имя, почта и пароль (04.10.2026).
 
-  Где хранятся аккаунты. Пока база не подключена, работает проверочное хранилище demoStore:
-  аккаунт живёт только в этом браузере (localStorage), кассир его не видит, с другого устройства
-  войти нельзя. Пароль не хранится, хранится его хэш (PBKDF2, своя соль у каждого аккаунта).
-  Чтобы подключить базу, достаточно написать объект с теми же методами, что у demoStore
-  (current, signUp, signIn, signOut), и поставить его в store.
+  Где хранятся аккаунты (с 06.10.2026). На сервере бонусов в Yandex Cloud (HB.loyalty.api, код в папке
+  «сервер/бонусы»): имя, почта, хэш пароля, номер карты, баллы и операции. Кассир видит карту на странице
+  кассир.html. В браузере лежат только ключ входа (hb-session) и копия имени, номера карты и баллов (hb-me),
+  чтобы шапка сразу показывала баллы, пока сервер отвечает. «Выйти» стирает и то и другое.
+  В окне «Ваши баллы» есть последние операции и удаление аккаунта (отзыв согласия, нужен пароль).
+  Проверочное хранилище в браузере (hb-demo-*), которое было до сервера, стирается при открытии сайта.
 */
 (function () {
   'use strict';
@@ -36,79 +37,75 @@
   function cardNo(n) { return nb('№ ' + String(n).replace(/(\d{3})(?=\d)/g, '$1 ')); }
   function cleanName(s) { return String(s || '').replace(/\s+/g, ' ').trim(); }
   function cleanEmail(s) { return String(s || '').trim().toLowerCase(); }
-  function sameName(a, b) {
-    function key(s) { return cleanName(s).toLowerCase().replace(/ё/g, 'е'); }
-    return key(a) === key(b);
+  function when(ms) {
+    return new Date(ms).toLocaleString('ru-RU', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
   }
   var EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
   var EARN = nb(RULE.points + ' ' + pointsWord(RULE.points));      // «10 баллов»
   var PER = 'за каждые ' + nb(U.price(RULE.spend)) + ' покупки';  // «за каждые 100 ₽ покупки»
   var WORTH = nb('1 балл = ' + U.price(RULE.rub));                // «1 балл = 1 ₽»
+  /* Считается от любой суммы, не только от целых сотен (владелец: «250р - 25 баллов»). */
+  var FOR250 = Math.floor(250 * RULE.points / RULE.spend);
+  var EXAMPLE = nb(U.price(250)) + ' дают ' + nb(FOR250 + ' ' + pointsWord(FOR250));   // «250 ₽ дают 25 баллов»
 
   /* ---------- Ошибки ---------- */
-  function fail(code) { var e = new Error(code); e.code = code; return e; }
   var MESSAGES = {
     credentials: 'Не нашли аккаунт с таким именем, почтой и паролем. Проверьте их или зарегистрируйтесь.',
     exists: 'Эта почта уже зарегистрирована. Проверьте имя и пароль и нажмите «Войти».',
-    storage: 'Браузер не даёт сохранить аккаунт. Выйдите из режима инкогнито и попробуйте ещё раз.',
-    old: 'Этот браузер не умеет безопасно хранить пароль. Обновите его или откройте сайт в другом браузере.',
-    unknown: 'Что-то пошло не так. Попробуйте ещё раз.'
+    locked: 'Слишком много неудачных попыток. Подождите 15 минут и попробуйте снова.',
+    bad: 'Проверьте имя, почту и пароль: что-то заполнено не так.',
+    auth: 'Вход устарел. Войдите ещё раз.',
+    network: 'Нет связи с сервером. Проверьте интернет и попробуйте ещё раз.',
+    old: 'Этот браузер слишком старый для входа. Обновите его или откройте сайт в другом браузере.',
+    unknown: 'Что-то пошло не так на нашей стороне. Попробуйте ещё раз через минуту.'
   };
 
-  /* ---------- Проверочное хранилище: аккаунты только в этом браузере ---------- */
-  var USERS = 'hb-demo-accounts', SESSION = 'hb-demo-session';
-  function read(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }
-  function write(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { throw fail('storage'); } }
-  function b64(bytes) { return btoa(String.fromCharCode.apply(null, new Uint8Array(bytes))); }
-  function unb64(s) { return Uint8Array.from(atob(s), function (c) { return c.charCodeAt(0); }); }
-  function canHash() { return !!(window.crypto && crypto.subtle && crypto.getRandomValues && window.TextEncoder); }
-  function hash(password, salt) {
-    return crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveBits'])
-      .then(function (key) {
-        return crypto.subtle.deriveBits({ name: 'PBKDF2', salt: salt, iterations: 150000, hash: 'SHA-256' }, key, 256);
-      })
-      .then(b64);
+  /* ---------- Сервер бонусов ---------- */
+  var TOKEN = 'hb-session', ME = 'hb-me';
+  var memory = {};   // если браузер не даёт localStorage (бывает в инкогнито), вход живёт до закрытия вкладки
+  function read(k) {
+    try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : null; } catch (e) { return memory[k] || null; }
   }
-  function profile(email, u) { return { name: u.name, email: email, number: u.card, points: u.points || 0 }; }
+  function write(k, v) { memory[k] = v; try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* хватит памяти вкладки */ } }
+  function forget() {
+    memory = {};
+    try { localStorage.removeItem(TOKEN); localStorage.removeItem(ME); } catch (e) { /* стирать нечего */ }
+  }
+  try { localStorage.removeItem('hb-demo-accounts'); localStorage.removeItem('hb-demo-session'); } catch (e) { /* нет доступа */ }
 
-  var demoStore = {
-    demo: true,
+  function keep(r) {
+    if (r.token) write(TOKEN, r.token);
+    write(ME, { name: r.user.name, number: r.user.number, points: r.user.points });
+    return r.user;
+  }
+  var store = {
+    /* Копия из браузера: чтобы шапка сразу показала баллы, пока сервер отвечает. */
+    cached: function () { return read(TOKEN) ? read(ME) : null; },
     current: function () {
-      var users = read(USERS) || {}, email = read(SESSION);
-      return Promise.resolve(email && users[email] ? profile(email, users[email]) : null);
+      var token = read(TOKEN);
+      if (!token) return Promise.resolve(null);
+      return U.api({ action: 'me', token: token }).then(keep, function (err) {
+        if (err.code === 'auth') { forget(); return null; }   // вход устарел или аккаунт удалён
+        throw err;
+      });
     },
     signUp: function (d) {
-      if (!canHash()) return Promise.reject(fail('old'));
-      var users = read(USERS) || {};
-      if (users[d.email]) return Promise.reject(fail('exists'));
-      var salt = crypto.getRandomValues(new Uint8Array(16));
-      return hash(d.password, salt).then(function (h) {
-        var taken = {}, no;
-        Object.keys(users).forEach(function (k) { taken[users[k].card] = true; });
-        do { no = 100000 + Math.floor(Math.random() * 900000); } while (taken[no]);
-        users[d.email] = { name: d.name, salt: b64(salt), hash: h, card: no, points: 0, created: new Date().toISOString() };
-        write(USERS, users);
-        write(SESSION, d.email);
-        return profile(d.email, users[d.email]);
-      });
+      return U.api({ action: 'register', name: d.name, email: d.email, password: d.password, consent: d.consent }).then(keep);
     },
     signIn: function (d) {
-      if (!canHash()) return Promise.reject(fail('old'));
-      var u = (read(USERS) || {})[d.email];
-      if (!u) return Promise.reject(fail('credentials'));
-      return hash(d.password, unb64(u.salt)).then(function (h) {
-        if (h !== u.hash || !sameName(d.name, u.name)) throw fail('credentials');
-        write(SESSION, d.email);
-        return profile(d.email, u);
-      });
+      return U.api({ action: 'login', name: d.name, email: d.email, password: d.password }).then(keep);
     },
     signOut: function () {
-      try { localStorage.removeItem(SESSION); } catch (e) { /* стирать нечего */ }
+      var token = read(TOKEN);
+      forget();
+      if (token) U.api({ action: 'logout', token: token }).catch(function () { /* ключ и так стёрт в браузере */ });
       return Promise.resolve();
+    },
+    remove: function (password) {
+      return U.api({ action: 'delete', token: read(TOKEN), password: password }).then(forget);
     }
   };
-  var store = demoStore;
 
   /* ---------- Шапка ---------- */
   /* В index.html кнопки уже вписаны в разметку, чтобы шапка не менялась после запуска скрипта;
@@ -146,7 +143,8 @@
         '<button type="button" class="auth-close" data-auth-close aria-label="Закрыть">' + icon('x') + '</button>' +
       '</div>' +
       '<form class="auth" data-part="form" novalidate>' +
-        '<p class="auth-rule">' + esc(EARN + ' ' + PER + '. ' + WORTH) + '.</p>' +
+        '<p class="auth-note" role="status" hidden></p>' +
+        '<p class="auth-rule">' + esc(EARN + ' ' + PER + ', ' + EXAMPLE + '. ' + WORTH) + '.</p>' +
         '<div class="auth-tabs" role="group" aria-label="Регистрация или вход">' +
           '<button type="button" data-mode="register" aria-pressed="true">Регистрация</button>' +
           '<button type="button" data-mode="login" aria-pressed="false">Вход</button>' +
@@ -172,7 +170,7 @@
         '</div>' +
         '<div class="check" data-only="register">' +
           '<input id="auth-consent" name="consent" type="checkbox" aria-describedby="auth-consent-err">' +
-          '<label for="auth-consent">Даю согласие на обработку персональных данных по <a href="politika.html" target="_blank" rel="noopener">политике конфиденциальности</a></label>' +
+          '<label for="auth-consent">Даю <a href="согласие.html" target="_blank" rel="noopener">согласие на обработку персональных данных</a> для бонусной программы</label>' +
           '<p class="field-err" id="auth-consent-err" hidden></p>' +
         '</div>' +
         '<p class="auth-error" role="alert" hidden></p>' +
@@ -182,13 +180,30 @@
         '<p class="me-points"><span data-me-points>0</span><span class="me-unit" data-me-unit>баллов</span></p>' +
         '<p class="me-card" data-me-card></p>' +
         '<p class="me-hint">Назовите номер или покажите это окно на кассе: кассир начислит баллы или спишет их в счёт оплаты.</p>' +
-        '<p class="me-rule">' + esc(EARN + ' ' + PER + ', ' + WORTH) + '.</p>' +
+        '<p class="me-rule">' + esc(EARN + ' ' + PER + ', ' + EXAMPLE + '. ' + WORTH) + '.</p>' +
         '<div class="me-actions">' +
           '<button type="button" class="btn btn--green" data-auth-close>Готово</button>' +
           '<button type="button" class="btn btn--line" data-auth-logout>Выйти</button>' +
         '</div>' +
+        '<section class="me-ops" aria-labelledby="me-ops-title">' +
+          '<h3 class="me-ops-title" id="me-ops-title">Последние операции</h3>' +
+          '<ul class="me-ops-list" data-me-ops></ul>' +
+          '<p class="me-ops-empty" data-me-empty hidden>Пока пусто. Баллы появятся после первой покупки с картой.</p>' +
+        '</section>' +
+        '<button type="button" class="me-delete" data-auth-delete>Удалить аккаунт</button>' +
       '</div>' +
-      (store.demo ? '<p class="auth-demo">Бонусы пока работают в тестовом режиме: аккаунт хранится только в этом браузере, кассир его ещё не видит.</p>' : '') +
+      '<form class="auth" data-part="delete" novalidate hidden>' +
+        '<p class="del-text" data-del-text></p>' +
+        '<div class="field">' +
+          '<label for="del-password">Пароль</label>' +
+          '<input id="del-password" name="password" type="password" autocomplete="current-password" maxlength="72" aria-describedby="del-password-err">' +
+          '<p class="field-err" id="del-password-err" hidden></p>' +
+        '</div>' +
+        '<div class="me-actions">' +
+          '<button type="button" class="btn btn--green" data-del-cancel>Оставить аккаунт</button>' +
+          '<button type="submit" class="btn btn--line" data-del-submit>Удалить навсегда</button>' +
+        '</div>' +
+      '</form>' +
      '</div>' +
     '</dialog>');
 
@@ -196,7 +211,8 @@
   var title = dlg.querySelector('.auth-title');
   var form = dlg.querySelector('form');
   var submit = form.querySelector('[data-submit]');
-  var parts = { form: form, me: dlg.querySelector('[data-part="me"]') };
+  var parts = { form: form, me: dlg.querySelector('[data-part="me"]'), del: dlg.querySelector('[data-part="delete"]') };
+  var delSubmit = parts.del.querySelector('[data-del-submit]');
   var state = { user: null, view: 'form', mode: 'register', busy: false };
   var opener = null;
 
@@ -214,17 +230,59 @@
       : 'Войдите, чтобы копить и тратить баллы';
   }
 
+  function paintMe() {
+    var u = state.user, me = parts.me, ops = u.history;
+    me.querySelector('[data-me-points]').textContent = group(u.points);
+    me.querySelector('[data-me-unit]').textContent = pointsWord(u.points);
+    me.querySelector('[data-me-card]').textContent = u.name + ', карта ' + cardNo(u.number);
+    /* У копии из браузера истории нет: раздел появляется, когда ответит сервер. */
+    me.querySelector('.me-ops').hidden = !ops;
+    if (!ops) return;
+    var list = me.querySelector('[data-me-ops]');
+    list.hidden = !ops.length;
+    me.querySelector('[data-me-empty]').hidden = ops.length > 0;
+    list.innerHTML = ops.map(function (x) {
+      var sub = when(x.at) + (x.spent ? ', списано ' + nb(group(x.spent) + ' ' + pointsWord(x.spent)) : '');
+      return '<li class="me-op">' +
+        '<span class="me-op-what">Покупка на ' + esc(nb(U.price(x.amount))) + '</span>' +
+        '<span class="me-op-pts">+' + group(x.earned) + '</span>' +
+        '<span class="me-op-when">' + esc(sub) + '</span>' +
+      '</li>';
+    }).join('');
+  }
+
   function show(view) {
     state.view = view;
     parts.form.hidden = view !== 'form';
     parts.me.hidden = view !== 'me';
-    title.textContent = view === 'me' ? 'Ваши баллы' : 'Бонусы и скидки';
-    if (view === 'me') {
+    parts.del.hidden = view !== 'delete';
+    title.textContent = view === 'me' ? 'Ваши баллы' : view === 'delete' ? 'Удалить аккаунт' : 'Бонусы и скидки';
+    if (view === 'me') paintMe();
+    if (view === 'delete') {
       var u = state.user;
-      parts.me.querySelector('[data-me-points]').textContent = group(u.points);
-      parts.me.querySelector('[data-me-unit]').textContent = pointsWord(u.points);
-      parts.me.querySelector('[data-me-card]').textContent = u.name + ', карта ' + cardNo(u.number);
+      parts.del.querySelector('[data-del-text]').textContent = 'Аккаунт, карта ' + cardNo(u.number) + ' и ' +
+        nb(group(u.points) + ' ' + pointsWord(u.points)) + ' удалятся навсегда, вернуть их будет нельзя. ' +
+        'Чтобы подтвердить, введите пароль.';
+      parts.del.elements.password.value = '';
+      delError('');
     }
+  }
+
+  /* Свежие баллы с сервера: при открытии сайта, окна и при возврате на вкладку (кассир мог начислить). */
+  var lastRefresh = 0;
+  var gen = 0;   // растёт при входе, выходе и удалении: ответ, пришедший после них, уже не нужен
+  function refresh() {
+    var mine = gen;
+    lastRefresh = Date.now();
+    return store.current().then(function (u) {
+      if (mine !== gen) return;
+      var had = !!state.user;
+      state.user = u;
+      paintOutside();
+      if (!dlg.open || state.busy) return;
+      if (u && state.view === 'me') paintMe();
+      if (!u && had && state.view !== 'form') { setMode('login'); show('form'); formError(MESSAGES.auth); }
+    }, function () { /* нет связи: остаётся копия из браузера */ });
   }
 
   /* ---------- Форма ---------- */
@@ -242,7 +300,18 @@
     p.textContent = msg || '';
     p.hidden = !msg;
   }
-  function clearErrors() { FIELDS.forEach(function (n) { fieldError(n, ''); }); formError(''); }
+  function clearErrors() { FIELDS.forEach(function (n) { fieldError(n, ''); }); formError(''); note(''); }
+  function note(msg) {
+    var p = form.querySelector('.auth-note');
+    p.textContent = msg || '';
+    p.hidden = !msg;
+  }
+  function delError(msg) {
+    var input = parts.del.elements.password, p = parts.del.querySelector('#del-password-err');
+    if (msg) input.setAttribute('aria-invalid', 'true'); else input.removeAttribute('aria-invalid');
+    p.textContent = msg || '';
+    p.hidden = !msg;
+  }
 
   function label() { return state.mode === 'register' ? 'Зарегистрироваться' : 'Войти'; }
   function setMode(mode) {
@@ -294,6 +363,7 @@
     busy(true);
     (state.mode === 'register' ? store.signUp(d) : store.signIn(d)).then(function (user) {
       busy(false);
+      gen++;
       form.elements.password.value = '';
       state.user = user;
       paintOutside();
@@ -321,10 +391,55 @@
     toggle.setAttribute('aria-label', open ? 'Скрыть пароль' : 'Показать пароль');
   });
 
+  /* ---------- Удаление аккаунта ---------- */
+  function delBusy(on) {
+    state.busy = on;
+    delSubmit.disabled = on;
+    delSubmit.setAttribute('aria-busy', String(on));
+    delSubmit.textContent = on ? 'Удаляем…' : 'Удалить навсегда';
+  }
+  parts.del.addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (state.busy) return;
+    var input = parts.del.elements.password;
+    delError('');
+    if (!input.value) { delError('Введите пароль'); input.focus(); return; }
+    delBusy(true);
+    store.remove(input.value).then(function () {
+      delBusy(false);
+      gen++;
+      state.user = null;
+      paintOutside();
+      setMode('register');
+      show('form');
+      note('Аккаунт, карта и баллы удалены. Если захотите вернуться, зарегистрируйтесь заново.');
+      title.focus();
+    }, function (err) {
+      delBusy(false);
+      var code = err && err.code;
+      if (code === 'auth') {   // вход устарел: удалять уже нечем, просим войти
+        gen++;
+        state.user = null;
+        paintOutside();
+        setMode('login');
+        show('form');
+        formError(MESSAGES.auth);
+        title.focus();
+        return;
+      }
+      delError(code === 'credentials' ? 'Пароль не подходит' : MESSAGES[code] || MESSAGES.unknown);
+      input.focus();
+    });
+  });
+  parts.del.addEventListener('input', function () { delError(''); });
+
   /* ---------- Открыть и закрыть окно ---------- */
   function open(what, from) {
     opener = from || null;
-    if (state.user) show('me');
+    if (state.user) {
+      show('me');
+      if (Date.now() - lastRefresh > 5000) refresh();
+    }
     else { setMode(what === 'login' ? 'login' : 'register'); show('form'); }
     if (!dlg.open) {
       if (typeof dlg.showModal === 'function') dlg.showModal(); else dlg.setAttribute('open', '');
@@ -341,6 +456,7 @@
   dlg.addEventListener('close', function () {
     document.documentElement.classList.remove('has-dialog');
     form.elements.password.value = '';
+    parts.del.elements.password.value = '';
     clearErrors();
     /* Фокус возвращается туда, откуда окно открыли; если та кнопка скрылась (после выхода), на полосу. */
     var back = opener && document.contains(opener) && !opener.hidden ? opener : banner;
@@ -353,12 +469,19 @@
   dlg.addEventListener('click', function (e) { if (e.target === dlg) close(); });
 
   document.addEventListener('click', function (e) {
-    var t = e.target.closest && e.target.closest('[data-auth], [data-mode], [data-auth-close], [data-auth-logout]');
+    var t = e.target.closest && e.target.closest('[data-auth], [data-mode], [data-auth-close], [data-auth-logout], [data-auth-delete], [data-del-cancel]');
     if (!t) return;
     if (t.hasAttribute('data-mode')) { if (!state.busy) setMode(t.getAttribute('data-mode')); return; }
     if (t.hasAttribute('data-auth-close')) { close(); return; }
+    if (t.hasAttribute('data-auth-delete')) {
+      show('delete');
+      if (FINE) parts.del.elements.password.focus(); else title.focus();
+      return;
+    }
+    if (t.hasAttribute('data-del-cancel')) { if (!state.busy) { show('me'); title.focus(); } return; }
     if (t.hasAttribute('data-auth-logout')) {
       store.signOut().then(function () {
+        gen++;
         state.user = null;
         paintOutside();
         close();
@@ -370,17 +493,22 @@
 
   /* Вход или выход в другой вкладке этого же браузера. */
   window.addEventListener('storage', function (e) {
-    if (e.key !== SESSION && e.key !== USERS) return;
-    store.current().then(function (u) {
-      state.user = u;
-      paintOutside();
-      if (dlg.open) show(u ? 'me' : 'form');
-    });
+    if (e.key === TOKEN) { gen++; refresh(); return; }
+    if (e.key !== ME || !state.user || state.busy) return;
+    var c = store.cached();                    // другая вкладка получила свежие баллы
+    if (!c) return;
+    state.user.points = c.points;
+    paintOutside();
+    if (dlg.open && state.view === 'me') paintMe();
+  });
+
+  /* Гость вернулся на вкладку, например после кассы: баллы могли измениться. */
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'visible' && state.user && Date.now() - lastRefresh > 15000) refresh();
   });
 
   /* ---------- Старт ---------- */
+  state.user = store.cached();
   paintOutside();
-  store.current().then(function (u) {
-    if (u) { state.user = u; paintOutside(); }
-  });
+  refresh();
 })();

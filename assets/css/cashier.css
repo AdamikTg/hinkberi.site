@@ -3,6 +3,7 @@
   зелёный #557420, текст #1D201D, угол 8px, линии 2px, без теней. Плотнее и спокойнее витрины:
   поля высотой 56px под палец, цифры одной ширины, Oswald только для заголовков и больших чисел.
   Поля, ошибки, кнопки порций и список операций те же, что в окне гостя (account.css, style.css).
+  С 07.10.2026 под полем номера кнопка «Сканировать QR-код» и окно камеры.
   На ПК справа гость и его последние операции, на телефоне всё одной колонкой: карта, гость, чек, операции.
 */
 html[data-page="till"] { scroll-padding-top: 80px; }
@@ -51,6 +52,21 @@ html[data-page="till"] { scroll-padding-top: 80px; }
 .till-go { height: 56px; padding: 0 28px; font-size: 16px; }
 .till-hint { margin-top: 8px; }
 
+/* Камера для QR-кода (07.10.2026): кнопка во всю ширину под полем номера, вместо неё при включении
+   окно видео 4:3 с белой рамкой там, где ищется код (середина кадра), и строка подсказки с «Закрыть камеру». */
+.till-scan { margin-top: 10px; }
+.till-cam { display: grid; gap: 10px; margin-top: 10px; }
+.till-cam-view { position: relative; aspect-ratio: 4 / 3; overflow: hidden; border-radius: var(--r); background: var(--ink); }
+.till-cam-view video { display: block; width: 100%; height: 100%; object-fit: cover; }
+.till-cam-frame {
+  position: absolute; top: 10%; left: 50%; height: 80%; aspect-ratio: 1; transform: translateX(-50%);
+  border: 2px solid var(--white); border-radius: var(--r); pointer-events: none;
+}
+.till-cam-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; }
+.till-cam-status { flex: 1 1 240px; font-size: 15px; line-height: 1.45; color: var(--ink-2); }
+.till-cam-status.is-warn { color: var(--ink); font-weight: 600; }
+.till-cam-bar .btn { height: 44px; padding: 0 18px; font-size: 14.5px; }
+
 /* Гость: мятная полоса с именем слева и баллами справа */
 .till-guest {
   display: flex; align-items: center; justify-content: space-between; gap: 16px;
@@ -67,7 +83,7 @@ html[data-page="till"] { scroll-padding-top: 80px; }
 @keyframes till-pulse { from { opacity: 1; } to { opacity: .45; } }
 
 /* Чек */
-.till-wait { padding: 14px 16px; border: 2px solid var(--line); border-radius: var(--r); font-size: 15px; color: var(--ink-2); }
+.till-wait { margin-bottom: 18px; padding: 14px 16px; border: 2px solid var(--line); border-radius: var(--r); font-size: 15px; color: var(--ink-2); }
 .till-fields { min-width: 0; margin: 0; padding: 0; border: 0; display: grid; gap: 18px; }
 .till-fields:disabled .field, .till-fields:disabled .till-sum { opacity: .45; }
 .till-unit { position: relative; }

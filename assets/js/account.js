@@ -15,6 +15,7 @@
   кассир.html. В браузере лежат только ключ входа (hb-session) и копия имени, номера карты и баллов (hb-me),
   чтобы шапка сразу показывала баллы, пока сервер отвечает. «Выйти» стирает и то и другое.
   В окне «Ваши баллы» есть последние операции и удаление аккаунта (отзыв согласия, нужен пароль).
+  С 07.10.2026 там же QR-код карты гостя (assets/js/qr.js, строка HB.loyalty.qr + номер): касса читает его камерой.
   Проверочное хранилище в браузере (hb-demo-*), которое было до сервера, стирается при открытии сайта.
 */
 (function () {
@@ -34,7 +35,8 @@
   function pointsWord(n) { return plural(n, 'балл', 'балла', 'баллов'); }
   function group(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' '); }
   function nb(s) { return s.replace(/ /g, ' '); }        // число и слово не разрываются по строкам
-  function cardNo(n) { return nb('№ ' + String(n).replace(/(\d{3})(?=\d)/g, '$1 ')); }
+  function digitsOf(n) { return nb(String(n).replace(/(\d{3})(?=\d)/g, '$1 ')); }   // «465 480»
+  function cardNo(n) { return nb('№ ') + digitsOf(n); }
   function cleanName(s) { return String(s || '').replace(/\s+/g, ' ').trim(); }
   function cleanEmail(s) { return String(s || '').trim().toLowerCase(); }
   function when(ms) {
@@ -179,7 +181,14 @@
       '<div class="auth-me" data-part="me" hidden>' +
         '<p class="me-points"><span data-me-points>0</span><span class="me-unit" data-me-unit>баллов</span></p>' +
         '<p class="me-card" data-me-card></p>' +
-        '<p class="me-hint">Назовите номер или покажите это окно на кассе: кассир начислит баллы или спишет их в счёт оплаты.</p>' +
+        '<div class="me-qr">' +
+          '<div class="me-qr-code" data-me-qr></div>' +
+          '<div class="me-qr-text">' +
+            '<p class="me-qr-label">Карта</p>' +
+            '<p class="me-qr-no" data-me-no></p>' +
+            '<p class="me-qr-hint">Покажите код кассиру или назовите номер</p>' +
+          '</div>' +
+        '</div>' +
         '<p class="me-rule">' + esc(EARN + ' ' + PER + ', ' + EXAMPLE + '. ' + WORTH) + '.</p>' +
         '<div class="me-actions">' +
           '<button type="button" class="btn btn--green" data-auth-close>Готово</button>' +
@@ -226,7 +235,7 @@
       ? 'У вас ' + nb(group(u.points) + ' ' + pointsWord(u.points))
       : 'Получать бонусы и скидки';
     banner.querySelector('[data-bonus-sub]').textContent = inside
-      ? 'Карта ' + cardNo(u.number) + '. Покажите её на кассе'
+      ? 'Карта ' + cardNo(u.number) + '. Нажмите, чтобы показать QR-код'
       : 'Войдите, чтобы копить и тратить баллы';
   }
 
@@ -234,7 +243,16 @@
     var u = state.user, me = parts.me, ops = u.history;
     me.querySelector('[data-me-points]').textContent = group(u.points);
     me.querySelector('[data-me-unit]').textContent = pointsWord(u.points);
-    me.querySelector('[data-me-card]').textContent = u.name + ', карта ' + cardNo(u.number);
+    me.querySelector('[data-me-card]').textContent = u.name;
+    me.querySelector('[data-me-no]').textContent = digitsOf(u.number);
+    /* QR-код карты рисуется в браузере (assets/js/qr.js) и только при смене номера. Если qr.js
+       не загрузился, остаётся номер: кассир наберёт его руками. */
+    var qr = me.querySelector('[data-me-qr]');
+    if (window.HBQR && qr.getAttribute('data-for') !== String(u.number)) {
+      qr.innerHTML = window.HBQR.svg(RULE.qr + u.number, 'QR-код карты ' + u.number);
+      qr.setAttribute('data-for', u.number);
+    }
+    qr.hidden = !window.HBQR;
     /* У копии из браузера истории нет: раздел появляется, когда ответит сервер. */
     me.querySelector('.me-ops').hidden = !ops;
     if (!ops) return;

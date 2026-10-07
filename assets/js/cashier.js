@@ -2,6 +2,9 @@
   Касса бонусов (кассир.html, hinkberi.site/кассир; просьба владельца 06.10.2026).
   Кассир входит общим паролем, находит карту гостя по номеру, вводит сумму чека и сколько баллов списать,
   проводит чек. Последний чек можно отменить в течение 15 минут, если по карте не было новых покупок.
+  С 07.10.2026 карту можно отсканировать: у каждого гостя в окне «Ваши баллы» свой QR-код («HINKBERI:» и номер),
+  кнопка «Сканировать QR-код» включает камеру этого устройства. Ручной сканер, который печатает код в поле номера,
+  тоже работает: из строки берутся цифры.
 
   Баллы считает сервер (папка «сервер/бонусы»): 1 балл за каждые полные 10 ₽, оплаченные деньгами
   (250 ₽ = 25 баллов), 1 балл = 1 ₽. Здесь тот же расчёт только для подсказки до проведения.
@@ -70,7 +73,7 @@
   var done = $('[data-done]');
   var hist = { list: $('[data-hist]'), empty: $('[data-hist-empty]') };
 
-  var state = { guest: null, op: null, last: null, busy: false, seq: 0 };
+  var state = { guest: null, op: null, last: null, busy: false, seq: 0, pending: null };
 
   function fieldError(input, errEl, msg) {
     if (msg) input.setAttribute('aria-invalid', 'true'); else input.removeAttribute('aria-invalid');
@@ -92,6 +95,8 @@
   }
   function toLogin(msg) {
     dropToken();
+    camStop();
+    show(cam.err, '');
     resetGuest();
     go('login');
     show(login.note, msg);
@@ -181,6 +186,7 @@
 
   function resetGuest() {
     state.seq++;
+    state.pending = null;
     state.guest = null;
     state.op = null;
     state.last = null;
@@ -200,7 +206,11 @@
     fieldError(find.input, find.err, '');
     if (no.length !== 6) { fieldError(find.input, find.err, 'В номере карты 6 цифр'); find.input.focus(); return; }
     if (state.guest && String(state.guest.number) === no && done.hidden) { check.amount.focus(); return; }
+    if (state.pending === no) return;   // этот номер уже ищем: ручной сканер после кода жмёт ещё и Enter
+    if (cam.running) camStop();
+    show(cam.err, '');
     var mine = ++state.seq;
+    state.pending = no;
     state.guest = null;
     state.op = null;
     state.last = null;
@@ -212,6 +222,7 @@
     busyBtn(find.submit, true, 'Ищем…', 'Найти');
     U.api({ action: 'cashier_find', token: token(), card: no }).then(function (r) {
       if (mine !== state.seq) return;
+      state.pending = null;
       busyBtn(find.submit, false, '', 'Найти');
       state.guest = r.guest;
       check.amount.value = '';
@@ -221,6 +232,7 @@
       check.amount.focus();
     }, function (er) {
       if (mine !== state.seq) return;
+      state.pending = null;
       busyBtn(find.submit, false, '', 'Найти');
       paintGuest(false);
       if (guard(er)) return;
@@ -238,6 +250,142 @@
     if (d.length === 6 && !(state.guest && String(state.guest.number) === d)) lookUp();
   });
   find.form.addEventListener('submit', function (e) { e.preventDefault(); lookUp(); });
+
+  /* ---------- QR-код карты: камера ----------
+     Кадры разбираются здесь же, в браузере: встроенным распознаванием (BarcodeDetector, Chrome на Android)
+     или библиотекой jsQR (iPhone, Windows и остальные). На сервер уходит только номер карты, как при наборе. */
+  var cam = {
+    open: $('[data-scan]'), box: $('[data-cam]'), video: $('[data-cam-video]'), status: $('[data-cam-status]'),
+    close: $('[data-cam-close]'), err: $('[data-cam-err]'),
+    stream: null, running: false, gen: 0, busy: false, last: 0, native: undefined, ctx: null
+  };
+  var CAM_ERRORS = {
+    NotAllowedError: 'Нет доступа к камере. Разрешите камеру для этого сайта в настройках браузера и нажмите «Сканировать QR-код» ещё раз.',
+    NotFoundError: 'Камера не найдена. Наберите номер карты вручную.',
+    NotReadableError: 'Камера занята другой программой. Закройте её и попробуйте ещё раз.',
+    nocam: 'Этот браузер не даёт доступ к камере. Наберите номер карты вручную.',
+    nodecoder: 'Не удалось запустить распознавание QR-кода. Обновите страницу или наберите номер вручную.'
+  };
+  CAM_ERRORS.SecurityError = CAM_ERRORS.NotAllowedError;
+  CAM_ERRORS.OverconstrainedError = CAM_ERRORS.NotFoundError;
+
+  /* «HINKBERI:465480» -> «465480»; чужой код -> null. */
+  function cardFromCode(text) {
+    text = String(text || '').trim().toUpperCase();
+    var rest = text.indexOf(RULE.qr) === 0 ? text.slice(RULE.qr.length) : '';
+    return /^\d{6}$/.test(rest) ? rest : null;
+  }
+
+  function camSay(msg, warn) {
+    cam.status.textContent = msg;
+    cam.status.classList.toggle('is-warn', !!warn);
+  }
+  function camStop() {
+    cam.gen++;               // ответы камеры, запрошенные раньше, больше не нужны
+    cam.running = false;
+    if (cam.stream) cam.stream.getTracks().forEach(function (t) { t.stop(); });
+    cam.stream = null;
+    cam.video.srcObject = null;
+    cam.box.hidden = true;
+    cam.open.hidden = false;
+  }
+  function camFail(name) {
+    var focused = cam.box.contains(document.activeElement);
+    camStop();
+    show(cam.err, CAM_ERRORS[name] || 'Камера не включилась. Попробуйте ещё раз или наберите номер вручную.');
+    if (focused) cam.open.focus();
+  }
+
+  /* Встроенное распознавание есть не везде; узнаём один раз. */
+  function pickDetector() {
+    if (cam.native !== undefined) return Promise.resolve();
+    cam.native = null;
+    if (!('BarcodeDetector' in window)) return Promise.resolve();
+    return window.BarcodeDetector.getSupportedFormats().then(function (formats) {
+      if (formats.indexOf('qr_code') >= 0) cam.native = new window.BarcodeDetector({ formats: ['qr_code'] });
+    }, function () { /* остаётся jsQR */ });
+  }
+
+  function camStart() {
+    if (cam.running) return;
+    show(cam.err, '');
+    fieldError(find.input, find.err, '');
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { camFail('nocam'); return; }
+    var mine = ++cam.gen;
+    cam.running = true;
+    cam.box.hidden = false;
+    cam.open.hidden = true;
+    cam.close.focus();
+    camSay('Включаем камеру…');
+    cam.box.scrollIntoView({ block: 'nearest' });
+    navigator.mediaDevices.getUserMedia({
+      audio: false,
+      video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }
+    }).then(function (stream) {
+      if (mine !== cam.gen) { stream.getTracks().forEach(function (t) { t.stop(); }); return; }   // закрыли, пока включалась
+      cam.stream = stream;
+      cam.video.srcObject = stream;
+      return Promise.all([cam.video.play(), pickDetector()]).then(function () {
+        if (mine !== cam.gen) return;
+        if (!cam.native && !window.jsQR) { camFail('nodecoder'); return; }
+        camSay('Наведите камеру на QR-код в телефоне гостя');
+        requestAnimationFrame(camTick);
+      });
+    }).catch(function (err) {
+      if (mine === cam.gen) camFail(err && err.name);
+    });
+  }
+
+  function camTick(now) {
+    if (!cam.running) return;
+    requestAnimationFrame(camTick);
+    if (cam.busy || cam.video.readyState < 2 || now - cam.last < 120) return;   // не чаще 8 кадров в секунду
+    cam.last = now;
+    cam.busy = true;
+    var mine = cam.gen;
+    readFrame().then(function (texts) {
+      cam.busy = false;
+      if (mine === cam.gen) camSeen(texts);
+    }, function () { cam.busy = false; });
+  }
+  function readFrame() {
+    var v = cam.video, w = v.videoWidth, h = v.videoHeight;
+    if (!w || !h) return Promise.resolve([]);
+    if (cam.native) {
+      return cam.native.detect(v).then(function (codes) { return codes.map(function (c) { return c.rawValue; }); });
+    }
+    /* jsQR: середина кадра под рамкой, не больше 480 точек по стороне, чтобы и слабый телефон успевал. */
+    var side = Math.round(Math.min(w, h) * 0.8), n = Math.min(480, side);
+    if (!cam.ctx) cam.ctx = document.createElement('canvas').getContext('2d', { willReadFrequently: true });
+    var ctx = cam.ctx;
+    if (ctx.canvas.width !== n) { ctx.canvas.width = n; ctx.canvas.height = n; }
+    ctx.drawImage(v, Math.round((w - side) / 2), Math.round((h - side) / 2), side, side, 0, 0, n, n);
+    var found = window.jsQR(ctx.getImageData(0, 0, n, n).data, n, n, { inversionAttempts: 'dontInvert' });
+    return Promise.resolve(found ? [found.data] : []);
+  }
+  function camSeen(texts) {
+    if (!texts.length) return;
+    var no = null;
+    texts.some(function (t) { no = cardFromCode(t); return !!no; });
+    if (!no) {
+      camSay('Это не QR-код карты ХинкБери. Попросите гостя открыть на сайте окно «Ваши баллы».', true);
+      return;
+    }
+    if (navigator.vibrate) navigator.vibrate(40);
+    camStop();
+    find.input.value = no.slice(0, 3) + ' ' + no.slice(3);
+    lookUp();
+  }
+
+  cam.open.addEventListener('click', camStart);
+  cam.close.addEventListener('click', function () { camStop(); cam.open.focus(); });
+  cam.box.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') { camStop(); cam.open.focus(); }
+  });
+  /* Ушли со вкладки или свернули браузер: камеру выключаем, чтобы не держать её зря. */
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'hidden' && cam.running) camStop();
+  });
 
   /* ---------- Чек ---------- */
   function numbers() {

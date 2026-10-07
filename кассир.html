@@ -10,8 +10,8 @@
   <link rel="icon" type="image/png" href="assets/img/logo/logo-mark.png">
   <link rel="stylesheet" href="assets/fonts/fonts.css?v=60861682">
   <link rel="stylesheet" href="Остальное/style.css?v=231d9ec2">
-  <link rel="stylesheet" href="assets/css/account.css?v=9b5def1f">
-  <link rel="stylesheet" href="assets/css/cashier.css?v=5f9f746f">
+  <link rel="stylesheet" href="assets/css/account.css?v=5cf63232">
+  <link rel="stylesheet" href="assets/css/cashier.css?v=7b67a2da">
 </head>
 <body>
   <header class="till-head">
@@ -49,11 +49,25 @@
         <h2 class="till-h" id="find-title">Карта гостя</h2>
         <form class="till-row" data-find novalidate>
           <label class="sr" for="till-card">Номер карты, 6 цифр</label>
-          <input class="till-num" id="till-card" name="card" inputmode="numeric" autocomplete="off" maxlength="7" placeholder="123 456" aria-describedby="till-card-hint till-card-err">
+          <input class="till-num" id="till-card" name="card" inputmode="numeric" autocomplete="off" maxlength="32" placeholder="123 456" aria-describedby="till-card-hint till-card-err">
           <button class="btn btn--green till-go" type="submit" data-find-submit>Найти</button>
         </form>
-        <p class="field-hint till-hint" id="till-card-hint">Гость называет номер или показывает его на сайте в окне «Ваши баллы».</p>
         <p class="field-err till-hint" id="till-card-err" role="alert" hidden></p>
+        <!-- QR-код карты гостя (07.10.2026): камера этого устройства, кадры разбираются здесь же в браузере
+             и никуда не отправляются. Ручной сканер, который печатает код в поле номера, тоже подходит. -->
+        <button type="button" class="btn btn--line till-wide till-scan" data-scan>Сканировать QR-код</button>
+        <div class="till-cam" data-cam hidden>
+          <div class="till-cam-view">
+            <video data-cam-video playsinline muted></video>
+            <span class="till-cam-frame" aria-hidden="true"></span>
+          </div>
+          <div class="till-cam-bar">
+            <p class="till-cam-status" data-cam-status role="status"></p>
+            <button type="button" class="btn btn--line" data-cam-close>Закрыть камеру</button>
+          </div>
+        </div>
+        <p class="auth-error till-hint" data-cam-err role="alert" hidden></p>
+        <p class="field-hint till-hint" id="till-card-hint">Отсканируйте QR-код в телефоне гостя или наберите номер карты: код и номер гость видит на сайте в окне «Ваши баллы».</p>
       </section>
 
       <section class="till-guest" aria-label="Гость" aria-live="polite" data-guest hidden></section>
@@ -104,7 +118,10 @@
     </div>
   </main>
 
-  <script src="assets/js/data.js?v=badb7d0e"></script>
-  <script src="assets/js/cashier.js?v=f68bf4c5"></script>
+  <script src="assets/js/data.js?v=b6657362"></script>
+  <!-- jsQR 1.4.0 (Cosmo Wolfe, лицензия Apache-2.0, текст в assets/js/vendor/jsQR-LICENSE.txt): чтение QR-кода
+       с камеры там, где браузер не умеет сам (iPhone, Windows). Файл из npm без изменений, проверен Kaspersky 07.10.2026. -->
+  <script src="assets/js/vendor/jsQR.js?v=ae81b7cf"></script>
+  <script src="assets/js/cashier.js?v=6cf96c5b"></script>
 </body>
 </html>

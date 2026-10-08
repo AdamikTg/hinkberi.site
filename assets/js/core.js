@@ -604,6 +604,28 @@
     var wide = window.matchMedia('(min-width: 721px)');
     function onWide() { if (wide.matches) close(); }
     if (wide.addEventListener) wide.addEventListener('change', onWide); else if (wide.addListener) wide.addListener(onWide);
+
+    /* Полоски без подложки: на белом и мятном тёмные, а над зелёными полосами (отзывы, бонусы, подвал)
+       белые. Следим, что проходит под кнопкой, по линии в 1px на высоте её середины. Полосу бонусов
+       ставит account.js позже этого скрипта, поэтому ищем блоки, когда страница готова. */
+    document.addEventListener('DOMContentLoaded', function () {
+      var darks = [].slice.call(document.querySelectorAll('.reviews, .bonus, .site-footer'));
+      if (!darks.length || !('IntersectionObserver' in window)) return;
+      var under = darks.map(function () { return false; }), io = null;
+      function watch() {
+        if (io) io.disconnect();
+        var r = toggle.getBoundingClientRect();
+        if (!r.height) return;                       // на ПК кнопки нет
+        var mid = Math.round(r.top + r.height / 2);
+        io = new IntersectionObserver(function (en) {
+          en.forEach(function (e) { under[darks.indexOf(e.target)] = e.isIntersecting; });
+          root.classList.toggle('burger-light', under.indexOf(true) >= 0);
+        }, { rootMargin: -mid + 'px 0px ' + -(window.innerHeight - mid - 1) + 'px 0px' });
+        darks.forEach(function (d) { io.observe(d); });
+      }
+      watch();
+      window.addEventListener('resize', watch);
+    });
   }
   HBSiteMenu();
 

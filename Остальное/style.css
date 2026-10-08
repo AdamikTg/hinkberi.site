@@ -120,9 +120,11 @@ html.hero-head.is-past-hero .site-header {
 .header-end .btn { height: 40px; font-size: 14px; padding: 0 16px; }
 
 /* ---------- Меню за кнопкой с тремя полосками: только телефон ----------
-   Кнопка по образцу владельца (08.10.2026): тёмная, полоски из его же файла assets/img/menu-lines-white.png. Она висит
-   в правом верхнем углу всё время, кроме меню блюд, где наверху своя строка разделов со стрелкой.
-   Окно меню собирает core.js (раздел 8) из ссылок и кнопок самой шапки. */
+   Три полоски из файла владельца (08.10.2026), без подложки, как он просил: «фон удали и добавь
+   именно без фона». На белом и мятном они тёмные (menu-lines-ink.png), над зелёными полосами
+   (отзывы, бонусы, подвал) сами становятся белыми (menu-lines-white.png, класс burger-light от
+   core.js). Кнопка висит в правом верхнем углу всё время, кроме меню блюд, где наверху своя строка
+   разделов со стрелкой. Окно меню собирает core.js (раздел 8) из ссылок и кнопок самой шапки. */
 .burger { display: none; }
 html.has-menu { overflow: hidden; scrollbar-gutter: stable; }   /* страница под окном не листается */
 .site-menu {
@@ -142,13 +144,15 @@ html.has-menu { overflow: hidden; scrollbar-gutter: stable; }   /* страни�
 }
 .site-menu-head { flex: none; display: flex; align-items: center; justify-content: space-between; height: var(--header); }
 .site-menu-head .brand img { height: 36px; }
+/* Нажимается квадрат 44×44, а видны только полоски (или крестик) шириной 28px; кнопка сдвинута
+   на 8px за край, чтобы правый край полосок стоял ровно по краю содержимого страницы. */
 .burger, .site-menu-close {
-  align-items: center; justify-content: center;
-  width: 84px; height: 44px; padding: 0; border: 0; border-radius: var(--r);
-  background: var(--ink); color: var(--white); cursor: pointer;
+  place-items: center;
+  width: 44px; height: 44px; padding: 0; border: 0; border-radius: var(--r);
+  background: transparent; color: var(--ink); cursor: pointer;
 }
-.site-menu-close { display: flex; }
-.site-menu-close .icon { width: 22px; height: 22px; }
+.site-menu-close { display: grid; margin-right: -8px; }
+.site-menu-close .icon { width: 28px; height: 28px; }
 .site-menu-nav { display: grid; margin-top: clamp(12px, 4vh, 36px); }
 .site-menu-nav a {
   padding: 8px 0; font: 300 46px/1.08 var(--display); letter-spacing: -.005em;
@@ -403,12 +407,16 @@ a.tile--photo:hover img { transform: scale(1.04); }
   .brand img { height: 36px; }
   .nav, .header-end { display: none; }
   .burger {
-    position: fixed; top: 8px; right: var(--side); z-index: 60;
-    display: flex;
+    position: fixed; top: 8px; right: calc(var(--side) - 8px); z-index: 60;
+    display: grid;
     transition: transform .25s var(--ease), opacity .25s var(--ease), visibility 0s linear 0s;
   }
-  /* Три полоски: файл владельца (08.10.2026), белые на прозрачном, обрезан и уменьшен, не перерисован. */
-  .burger-icon { display: block; width: 26px; height: auto; }
+  /* Три полоски: файл владельца (08.10.2026), фон убран, обрезан и уменьшен, не перерисован.
+     Тёмная и белая копии лежат друг на друге; над зелёными блоками тёмная плавно уступает белой. */
+  .burger-icon { grid-area: 1 / 1; display: block; width: 28px; height: auto; transition: opacity .2s var(--ease); }
+  .burger-icon--white { opacity: 0; }
+  html.burger-light .burger-icon--ink { opacity: 0; }
+  html.burger-light .burger-icon--white { opacity: 1; }
   .burger:active { transform: translateY(1px); }
   /* В меню блюд наверху своя строка разделов со стрелкой: кнопка не закрывает её, а уходит вверх. */
   html.is-menu .burger {

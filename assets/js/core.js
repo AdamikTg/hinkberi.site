@@ -540,6 +540,11 @@
     dlg.setAttribute('aria-label', 'Меню сайта');
     var box = document.createElement('div');
     box.className = 'site-menu-box';
+    /* Открытое окно берёт фокус на себя, а не на первую ссылку: иначе браузер ставит фокус на логотип
+       и телефон (Safari) обводит его чёрной рамкой (замечание владельца 08.10.2026). У [tabindex="-1"]
+       рамки нет, а с клавиатуры Tab ведёт дальше по ссылкам как обычно. */
+    box.setAttribute('tabindex', '-1');
+    box.setAttribute('autofocus', '');
     dlg.appendChild(box);
 
     var head = document.createElement('div');
@@ -583,6 +588,7 @@
     function open() {
       if (dlg.open) return;
       if (typeof dlg.showModal === 'function') dlg.showModal(); else dlg.setAttribute('open', '');
+      box.focus({ preventScroll: true });
       root.classList.add('has-menu');
       toggle.setAttribute('aria-expanded', 'true');
     }

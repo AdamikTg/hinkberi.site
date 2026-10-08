@@ -113,6 +113,7 @@
   /* ---------- Движение ---------- */
   window.HBIcons();
   window.HBScrolled(document.querySelector('.top-sentinel'));
+  window.HBHeroHeader(document.querySelector('.hero'));   // шапка держится, пока собирается бургер
 
   window.HBBurger({
     section: document.querySelector('.hero'),

@@ -3,6 +3,8 @@
   1. HBBurger: бургер собирается по кадрам, пока посетитель листает главный экран.
   2. HBMenuNav: когда посетитель дошёл до меню, сверху появляется строка разделов и стрелка наверх.
   3. Переключение порций: кнопки S / M / L меняют цену на месте.
+  Дальше иконки, адреса разделов без решётки, карта с согласием и (8) шапка без полосы с меню
+  за тремя полосками на телефоне.
 */
 (function () {
   'use strict';
@@ -519,8 +521,108 @@
     if (frames().length && !consent()) openBanner(false);
   });
 
+  /* ------------------------------------------------------------------
+     8. Шапка без полосы и меню за тремя полосками (просьба владельца 08.10.2026)
+     Шапка прозрачная, стоит наверху страницы (Остальное/style.css). На телефоне в ней только логотип,
+     а тёмная кнопка с тремя полосками [data-burger] открывает окно на весь экран: ссылки разделов и
+     кнопки шапки (Войти, Регистрация, Мои баллы или Маршрут). Окно собирается копией из самой шапки,
+     поэтому всё, что появится в шапке, само попадёт и в меню.
+     ------------------------------------------------------------------ */
+  function HBSiteMenu() {
+    var toggle = document.querySelector('[data-burger]');
+    var header = document.querySelector('.site-header');
+    if (!toggle || !header) return;
+    var root = document.documentElement;
+
+    var dlg = document.createElement('dialog');
+    dlg.className = 'site-menu';
+    dlg.id = 'site-menu';
+    dlg.setAttribute('aria-label', 'Меню сайта');
+    var box = document.createElement('div');
+    box.className = 'site-menu-box';
+    dlg.appendChild(box);
+
+    var head = document.createElement('div');
+    head.className = 'site-menu-head';
+    var brand = header.querySelector('.brand');
+    head.appendChild(brand ? brand.cloneNode(true) : document.createElement('span'));
+    head.insertAdjacentHTML('beforeend',
+      '<button type="button" class="site-menu-close" data-menu-close aria-label="Закрыть меню">' + window.hbIcon('x') + '</button>');
+    box.appendChild(head);
+
+    var nav = document.createElement('nav');
+    nav.className = 'site-menu-nav';
+    nav.setAttribute('aria-label', 'Разделы сайта');
+    [].slice.call(header.querySelectorAll('.nav a')).forEach(function (a, i) {
+      var c = a.cloneNode(true);
+      c.style.setProperty('--i', i);
+      nav.appendChild(c);
+    });
+    box.appendChild(nav);
+
+    var end = document.createElement('div');
+    end.className = 'site-menu-end';
+    [].slice.call(header.querySelectorAll('.header-end > *')).forEach(function (el) { end.appendChild(el.cloneNode(true)); });
+    box.appendChild(end);
+
+    /* Адрес и часы из data.js, если он есть на странице (на главной есть, на политике нет). */
+    var info = window.HB && window.HB.info;
+    if (info) {
+      var where = document.createElement('p'), route = document.createElement('a');
+      where.className = 'site-menu-where';
+      where.textContent = info.address + ', ' + info.hours.charAt(0).toLowerCase() + info.hours.slice(1) + '. ';
+      route.href = info.mapsRoute;
+      route.target = '_blank';
+      route.rel = 'noopener';
+      route.textContent = 'Построить маршрут';
+      where.appendChild(route);
+      box.appendChild(where);
+    }
+    document.body.appendChild(dlg);
+
+    function open() {
+      if (dlg.open) return;
+      if (typeof dlg.showModal === 'function') dlg.showModal(); else dlg.setAttribute('open', '');
+      root.classList.add('has-menu');
+      toggle.setAttribute('aria-expanded', 'true');
+    }
+    /* Закрываем сразу, а не по событию close: следом прокрутка к разделу, ей нужна свободная страница. */
+    function close() {
+      root.classList.remove('has-menu');
+      toggle.setAttribute('aria-expanded', 'false');
+      if (!dlg.open) return;
+      if (typeof dlg.close === 'function') dlg.close(); else dlg.removeAttribute('open');
+    }
+    dlg.addEventListener('close', close);   // Esc
+    toggle.addEventListener('click', open);
+    /* Ссылка раздела, Маршрут или кнопка шапки: окно меню закрывается и уступает место переходу,
+       а прокрутку и окно входа делают обычные обработчики страницы. */
+    dlg.addEventListener('click', function (e) {
+      if (e.target.closest && e.target.closest('a, button')) close();
+    });
+    /* Телефон повернули или окно стало широким: на ПК меню за кнопкой нет. */
+    var wide = window.matchMedia('(min-width: 721px)');
+    function onWide() { if (wide.matches) close(); }
+    if (wide.addEventListener) wide.addEventListener('change', onWide); else if (wide.addListener) wide.addListener(onWide);
+  }
+  HBSiteMenu();
+
+  /* На главной шапка держится, пока сцена с бургером закреплена, и уходит вверх, когда снизу
+     показывается следующий блок (плитки): так она всегда на белом фоне сцены. Без анимации
+     сцена не закрепляется, и шапка просто стоит наверху страницы. */
+  function HBHeroHeader(hero) {
+    var next = hero && hero.nextElementSibling;
+    if (!next || REDUCE || !('IntersectionObserver' in window)) return;
+    var root = document.documentElement;
+    root.classList.add('hero-head');
+    new IntersectionObserver(function (en) {
+      root.classList.toggle('is-past-hero', en[0].isIntersecting || en[0].boundingClientRect.top < 0);
+    }, { rootMargin: '0px 0px 10% 0px' }).observe(next);
+  }
+
   window.HBBurger = HBBurger;
   window.HBMenuNav = HBMenuNav;
   window.HBIcons = HBIcons;
   window.HBScrolled = HBScrolled;
+  window.HBHeroHeader = HBHeroHeader;
 })();

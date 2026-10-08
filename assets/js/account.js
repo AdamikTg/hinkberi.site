@@ -120,7 +120,9 @@
       '<button type="button" class="btn btn--green acc-card" data-auth="me" aria-haspopup="dialog" hidden>' +
         '<span class="acc-long">Мои баллы</span><span class="acc-short">Баллы</span></button>';
   }
-  var head = { login: end.querySelector('.acc-login'), join: end.querySelector('.acc-join'), card: end.querySelector('.acc-card') };
+  /* Копии этих кнопок есть в меню за тремя полосками на телефоне (core.js, раздел 8): обновляем все. */
+  function each(sel, fn) { [].forEach.call(document.querySelectorAll(sel), fn); }
+  function shown(el) { return !!(el && document.contains(el) && el.getClientRects().length); }
 
   /* ---------- Зелёная полоса под плитками ---------- */
   var tilesGrid = document.querySelector('.tiles-grid');
@@ -228,9 +230,8 @@
   /* ---------- Отрисовка ---------- */
   function paintOutside() {
     var u = state.user, inside = !!u;
-    head.login.hidden = inside;
-    head.join.hidden = inside;
-    head.card.hidden = !inside;
+    each('.acc-login, .acc-join', function (b) { b.hidden = inside; });
+    each('.acc-card', function (b) { b.hidden = !inside; });
     banner.querySelector('[data-bonus-title]').textContent = inside
       ? 'У вас ' + nb(group(u.points) + ' ' + pointsWord(u.points))
       : 'Получать бонусы и скидки';
@@ -476,8 +477,10 @@
     form.elements.password.value = '';
     parts.del.elements.password.value = '';
     clearErrors();
-    /* Фокус возвращается туда, откуда окно открыли; если та кнопка скрылась (после выхода), на полосу. */
-    var back = opener && document.contains(opener) && !opener.hidden ? opener : banner;
+    /* Фокус возвращается туда, откуда окно открыли. Если той кнопки больше не видно (после выхода
+       или она была в меню на телефоне, которое уже закрылось), то на кнопку меню, иначе на полосу. */
+    var burger = document.querySelector('[data-burger]');
+    var back = shown(opener) ? opener : shown(burger) ? burger : banner;
     back.focus({ preventScroll: true });
     opener = null;
   });

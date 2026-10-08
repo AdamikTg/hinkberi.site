@@ -89,17 +89,25 @@ h1, h2, h3, h4, p { margin: 0; }
 .sq:disabled { opacity: .3; cursor: default; }
 .sq--line:disabled:hover { background: transparent; border-color: var(--block); color: var(--ink); }
 
-/* ---------- Шапка: тонкая белая строка ---------- */
+/* ---------- Шапка: логотип и ссылки прямо на фоне страницы ----------
+   С 08.10.2026 по просьбе владельца без белой полосы и чёрной линии под ней. Шапка стоит наверху
+   страницы и уходит вместе с ней. На главной (класс hero-head от core.js) она держится на месте,
+   пока сцена с бургером закреплена, и уезжает вверх, когда снизу показываются плитки: так её буквы
+   всегда лежат на белом фоне сцены и никогда не наезжают на плитки, фото и зелёные полосы. */
 .site-header {
-  position: fixed; inset: 0 0 auto 0; z-index: 50;
+  position: absolute; inset: 0 0 auto 0; z-index: 50;
   height: var(--header);
   display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
   padding: 0 var(--side);
-  background: var(--white);
-  transition: transform .5s var(--ease), box-shadow .3s var(--ease);
 }
-html.is-scrolled .site-header { box-shadow: 0 2px 0 var(--ink); }
-html.is-menu .site-header { transform: translateY(-100%); box-shadow: none; }
+html.hero-head .site-header {
+  position: fixed;
+  transition: transform .3s var(--ease), visibility 0s linear 0s;
+}
+html.hero-head.is-past-hero .site-header {
+  transform: translateY(-100%); visibility: hidden;
+  transition: transform .3s var(--ease), visibility 0s linear .3s;
+}
 .nav { display: flex; gap: clamp(18px, 2.4vw, 32px); }
 .nav a {
   font: 500 13.5px/1 var(--text); letter-spacing: .03em;
@@ -110,6 +118,56 @@ html.is-menu .site-header { transform: translateY(-100%); box-shadow: none; }
 .brand img { height: 46px; width: auto; }
 .header-end { display: flex; justify-content: flex-end; }
 .header-end .btn { height: 40px; font-size: 14px; padding: 0 16px; }
+
+/* ---------- Меню за кнопкой с тремя полосками: только телефон ----------
+   Кнопка по образцу владельца (08.10.2026): тёмная, с тремя короткими белыми полосками. Она висит
+   в правом верхнем углу всё время, кроме меню блюд, где наверху своя строка разделов со стрелкой.
+   Окно меню собирает core.js (раздел 8) из ссылок и кнопок самой шапки. */
+.burger { display: none; }
+html.has-menu { overflow: hidden; scrollbar-gutter: stable; }   /* страница под окном не листается */
+.site-menu {
+  width: 100%; height: 100%; max-width: 100%; max-height: 100%;
+  margin: 0; padding: 0; border: 0;
+  background: var(--white); color: var(--ink);
+  overflow: auto; overscroll-behavior: contain;
+}
+.site-menu::backdrop { background: var(--white); }
+.site-menu [hidden] { display: none !important; }
+.site-menu-box {
+  min-height: 100%; display: flex; flex-direction: column;
+  padding: 0 var(--side) calc(24px + env(safe-area-inset-bottom, 0px));
+}
+.site-menu-head { flex: none; display: flex; align-items: center; justify-content: space-between; height: var(--header); }
+.site-menu-head .brand img { height: 36px; }
+.burger, .site-menu-close {
+  align-items: center; justify-content: center;
+  width: 84px; height: 44px; padding: 0; border: 0; border-radius: var(--r);
+  background: var(--ink); color: var(--white); cursor: pointer;
+}
+.site-menu-close { display: flex; }
+.site-menu-close .icon { width: 22px; height: 22px; }
+.site-menu-nav { display: grid; margin-top: clamp(12px, 4vh, 36px); }
+.site-menu-nav a {
+  padding: 8px 0; font: 300 46px/1.08 var(--display); letter-spacing: -.005em;
+  color: var(--ink); text-decoration: none;
+}
+.site-menu-nav a:hover, .site-menu-nav a:active { color: var(--green-text); }
+.site-menu-end { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: auto; padding-top: 32px; }
+.site-menu-end .btn { height: 52px; padding: 0 12px; font-size: 15px; }
+.site-menu-end button.btn--line { background: transparent; }
+.site-menu-end button.btn--line:hover { background: var(--ink); }
+.site-menu-end .acc-card, .site-menu-end .route { grid-column: 1 / -1; }
+.site-menu-end .acc-short { display: none; }
+.site-menu-end .acc-long { display: inline; }
+.site-menu-where { margin-top: 18px; font-size: 14px; line-height: 1.5; color: var(--ink-2); }
+.site-menu-where a { color: var(--green-text); text-underline-offset: 3px; }
+/* Появление: окно проявляется, ссылки разделов поднимаются по очереди. При «меньше движения» сразу. */
+@media (prefers-reduced-motion: no-preference) {
+  .site-menu[open] { animation: menu-in .2s var(--ease) both; }
+  .site-menu[open] .site-menu-nav a { animation: menu-item .45s var(--ease) both; animation-delay: calc(var(--i, 0) * 45ms + 40ms); }
+}
+@keyframes menu-in { from { opacity: 0; } }
+@keyframes menu-item { from { opacity: 0; transform: translateY(14px); } }
 
 /* ---------- Главный экран ---------- */
 .hero { position: relative; height: 250vh; }
@@ -336,15 +394,23 @@ a.tile--photo:hover img { transform: scale(1.04); }
 /* ---------- Телефон ---------- */
 @media (max-width: 720px) {
   :root { --header: 60px; }
-  .site-header { grid-template-columns: auto 1fr auto; gap: 10px; }
+  /* В шапке на телефоне только логотип: ссылки разделов и кнопки шапки уехали в меню за тремя полосками. */
+  .site-header { grid-template-columns: auto 1fr; }
   .brand { grid-column: 1; grid-row: 1; }
   .brand img { height: 36px; }
-  .nav { grid-column: 2; grid-row: 1; justify-content: flex-end; gap: 14px; }
-  .nav a { font-size: 13px; letter-spacing: .01em; padding: 15px 0; }
-  .nav a:first-child { display: none; }   /* «Главная»: на телефоне её заменяет логотип */
-  .header-end { grid-column: 3; grid-row: 1; }
-  .header-end .route { width: 44px; height: 44px; padding: 0; }
-  .route-text { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .nav, .header-end { display: none; }
+  .burger {
+    position: fixed; top: 8px; right: var(--side); z-index: 60;
+    display: flex; flex-direction: column; gap: 4px;
+    transition: transform .25s var(--ease), opacity .25s var(--ease), visibility 0s linear 0s;
+  }
+  .burger span { display: block; width: 20px; height: 3px; border-radius: 2px; background: currentColor; }
+  .burger:active { transform: translateY(1px); }
+  /* В меню блюд наверху своя строка разделов со стрелкой: кнопка не закрывает её, а уходит вверх. */
+  html.is-menu .burger {
+    transform: translateY(-12px); opacity: 0; visibility: hidden;
+    transition: transform .25s var(--ease), opacity .25s var(--ease), visibility 0s linear .25s;
+  }
   .hero-burger { margin-left: calc(-1 * var(--side)); margin-right: calc(-1 * var(--side)); }
   .opt { height: 40px; }
 
@@ -384,9 +450,8 @@ a.tile--photo:hover img { transform: scale(1.04); }
 }
 
 @media (max-width: 380px) {
-  .nav { gap: 10px; }
-  .nav a { font-size: 12.5px; }
-  .brand img { height: 32px; }
+  .brand img, .site-menu-head .brand img { height: 32px; }
+  .site-menu-nav a { font-size: 40px; }
 }
 
 /* ---------- Без анимации ---------- */

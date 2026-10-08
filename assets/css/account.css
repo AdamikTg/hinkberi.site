@@ -176,12 +176,9 @@ html.has-dialog { overflow: hidden; scrollbar-gutter: stable; }   /* стран�
 .me-delete:hover { color: var(--ink); }
 .del-text { font-size: 15px; line-height: 1.5; }
 
-/* ---------- Телефон: в шапке одна кнопка, окно на весь экран ---------- */
+/* ---------- Телефон: окно на весь экран ----------
+   Кнопок шапки на телефоне с 08.10.2026 нет: они в меню за тремя полосками (Остальное/style.css). */
 @media (max-width: 720px) {
-  .header-end .acc-join { display: none; }
-  .header-end .acc-login { background: var(--block); border-color: var(--block); color: var(--white); }
-  .header-end .btn { padding: 0 14px; }
-
   .bonus { min-height: 76px; margin-top: 14px; padding: 14px 14px 14px 16px; gap: 12px; }
   .bonus-icon { width: 30px; }
   .bonus-title { font-size: 21px; }
@@ -199,9 +196,6 @@ html.has-dialog { overflow: hidden; scrollbar-gutter: stable; }   /* стран�
   .me-qr { gap: 14px; padding: 12px; }
   .me-qr-code { width: 124px; }
   .me-qr-no { font-size: 30px; }
-  .header-end .btn { padding: 0 12px; font-size: 13.5px; }
-  .acc-long { display: none; }
-  .acc-short { display: inline; }
   .bonus { gap: 10px; padding: 12px 12px 12px 14px; }
   .bonus-icon { width: 26px; }
   .bonus-title { font-size: 19px; }

@@ -45,6 +45,7 @@ html.has-dialog { overflow: hidden; scrollbar-gutter: stable; }   /* стран�
   overflow: auto; overscroll-behavior: contain;
 }
 .auth-dialog::backdrop { background: rgba(29, 32, 29, .5); }
+.auth-dialog:not([open]) { display: none; }   /* браузеры без <dialog>: закрытое окно не видно */
 .auth-box { padding: 20px 24px 24px; }
 .auth-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
 .auth-title { font: 400 32px/1.05 var(--display); letter-spacing: -.005em; }

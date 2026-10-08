@@ -132,6 +132,9 @@ html.has-menu { overflow: hidden; scrollbar-gutter: stable; }   /* страни�
   overflow: auto; overscroll-behavior: contain;
 }
 .site-menu::backdrop { background: var(--white); }
+/* Браузеры без <dialog> (Safari до 15.4): закрытое окно прячем, открытое кладём поверх страницы. */
+.site-menu:not([open]) { display: none; }
+.site-menu[open] { position: fixed; inset: 0; z-index: 100; }
 .site-menu [hidden] { display: none !important; }
 .site-menu-box {
   min-height: 100%; display: flex; flex-direction: column;

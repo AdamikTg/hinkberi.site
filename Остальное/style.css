@@ -358,6 +358,8 @@ a.tile--photo:hover img { transform: scale(1.04); }
 }
 .about .mega { margin-bottom: 24px; }
 .lead { max-width: 40ch; margin-bottom: 28px; font-size: clamp(18px, 1.5vw, 20px); line-height: 1.55; }
+/* Второй абзац «О нас» (09.10.2026, для поиска и для гостей): обычный текст под вводным, приглушённый. */
+.about-more { max-width: 52ch; margin: -12px 0 28px; font-size: 16px; line-height: 1.6; color: var(--ink-2); }
 .facts { list-style: none; margin: 0 0 32px; padding: 0; display: grid; gap: 12px; }
 .facts li { display: flex; align-items: center; gap: 10px; }
 .facts .icon { width: 20px; height: 20px; color: var(--green-text); }

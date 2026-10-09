@@ -640,12 +640,20 @@
      сцена не закрепляется, и шапка просто стоит наверху страницы. */
   function HBHeroHeader(hero) {
     var next = hero && hero.nextElementSibling;
-    if (!next || REDUCE || !('IntersectionObserver' in window)) return;
-    var root = document.documentElement;
+    if (!next || REDUCE) return;
+    var root = document.documentElement, queued = false;
     root.classList.add('hero-head');
-    new IntersectionObserver(function (en) {
-      root.classList.toggle('is-past-hero', en[0].isIntersecting || en[0].boundingClientRect.top < 0);
-    }, { rootMargin: '0px 0px 10% 0px' }).observe(next);
+    /* Положение блока под сценой проверяем при каждой прокрутке (не чаще кадра), а не наблюдателем:
+       при прыжке сразу в «О нас» (ссылка /онас, клавиша End) наблюдатель не замечает, что плитки
+       перепрыгнули, и шапка оставалась на зелёном блоке отзывов (найдено 09.10.2026). */
+    function update() {
+      queued = false;
+      root.classList.toggle('is-past-hero', next.getBoundingClientRect().top < window.innerHeight * 1.1);
+    }
+    function soon() { if (!queued) { queued = true; requestAnimationFrame(update); } }
+    window.addEventListener('scroll', soon, { passive: true });
+    window.addEventListener('resize', soon);
+    update();
   }
 
   window.HBBurger = HBBurger;

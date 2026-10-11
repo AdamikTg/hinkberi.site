@@ -478,7 +478,7 @@
     banner.setAttribute('aria-labelledby', 'hb-consent-title');
     banner.hidden = true;
     banner.innerHTML =
-      '<h2 class="hb-consent-title" id="hb-consent-title">Карта и cookies</h2>' +
+      '<h2 class="hb-consent-title" id="hb-consent-title">Обработка данных и cookies</h2>' +
       '<p>В разделе «О нас» есть карта Яндекса. Если её показать, ООО «ЯНДЕКС» получит ваш IP-адрес и может сохранить свои cookies, в том числе для рекламы. Сам сайт cookies не использует. <a href="' + policyHref('cookies') + '">Подробнее</a></p>' +
       '<p class="hb-consent-state" data-consent-state></p>' +
       '<div class="hb-consent-actions">' +

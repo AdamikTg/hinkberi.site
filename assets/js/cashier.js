@@ -5,6 +5,9 @@
   С 07.10.2026 карту можно отсканировать: у каждого гостя в окне «Ваши баллы» свой QR-код («HINKBERI:» и номер),
   кнопка «Сканировать QR-код» включает камеру этого устройства. Ручной сканер, который печатает код в поле номера,
   тоже работает: из строки берутся цифры.
+  С 11.10.2026 в QR-коде ещё подпись сервера («HINKBERI:номер:подпись»): касса отправляет её вместе с номером,
+  сервер проверяет и отвечает guest.qr = true/false. В карточке гостя видно «QR-код проверен» или
+  «Номер набран вручную: спросите имя гостя». Набранный номер и ручной сканер считаются ручным вводом.
 
   Баллы считает сервер (папка «сервер/бонусы»): 1 балл за каждые полные 10 ₽, оплаченные деньгами
   (250 ₽ = 25 баллов), 1 балл = 1 ₽. Здесь тот же расчёт только для подсказки до проведения.
@@ -73,7 +76,7 @@
   var done = $('[data-done]');
   var hist = { list: $('[data-hist]'), empty: $('[data-hist-empty]') };
 
-  var state = { guest: null, op: null, last: null, busy: false, seq: 0, pending: null };
+  var state = { guest: null, op: null, last: null, busy: false, seq: 0, pending: null, sig: '' };
 
   function fieldError(input, errEl, msg) {
     if (msg) input.setAttribute('aria-invalid', 'true'); else input.removeAttribute('aria-invalid');
@@ -157,10 +160,14 @@
       guestBox.innerHTML = '<div class="till-guest-who"><span class="till-skel"></span><span class="till-skel till-skel--short"></span></div>' +
         '<span class="till-skel till-skel--num"></span>';
     } else if (g) {
+      /* Как найдена карта (11.10.2026): по QR с подписью сервера или номером, набранным руками. */
+      var how = g.qr === true ? '<p class="till-guest-check is-ok">QR-код проверен</p>'
+        : g.qr === false ? '<p class="till-guest-check">' + (state.sig ? 'QR-код не прошёл проверку' : 'Номер набран вручную') +
+          ': спросите имя гостя</p>' : '';
       guestBox.innerHTML =
         '<div class="till-guest-who">' +
           '<p class="till-guest-name">' + esc(g.name) + '</p>' +
-          '<p class="till-guest-card">Карта ' + esc(cardNo(g.number)) + '</p>' +
+          '<p class="till-guest-card">Карта ' + esc(cardNo(g.number)) + '</p>' + how +
         '</div>' +
         '<p class="till-guest-pts"><span>' + group(g.points) + '</span><span class="till-guest-unit">' +
           plural(g.points, 'балл', 'балла', 'баллов') + '</span></p>';
@@ -184,8 +191,15 @@
     }).join('');
   }
 
+  /* Ответ чека и отмены не повторяет проверку QR: карта та же, что нашли, отметка остаётся от поиска. */
+  function sameGuest(g) {
+    if (g && state.guest && g.qr === undefined) g.qr = state.guest.qr;
+    return g;
+  }
+
   function resetGuest() {
     state.seq++;
+    state.sig = '';
     state.pending = null;
     state.guest = null;
     state.op = null;
@@ -205,7 +219,10 @@
     var no = digits(find.input.value);
     fieldError(find.input, find.err, '');
     if (no.length !== 6) { fieldError(find.input, find.err, 'В номере карты 6 цифр'); find.input.focus(); return; }
-    if (state.guest && String(state.guest.number) === no && done.hidden) { check.amount.focus(); return; }
+    if (state.guest && String(state.guest.number) === no && done.hidden && (!state.sig || state.guest.qr === true)) {
+      check.amount.focus();
+      return;
+    }
     if (state.pending === no) return;   // этот номер уже ищем: ручной сканер после кода жмёт ещё и Enter
     if (cam.running) camStop();
     show(cam.err, '');
@@ -220,7 +237,7 @@
     paintGuest(true);
     paintCheck();
     busyBtn(find.submit, true, 'Ищем…', 'Найти');
-    U.api({ action: 'cashier_find', token: token(), card: no }).then(function (r) {
+    U.api({ action: 'cashier_find', token: token(), card: no, sig: state.sig || undefined }).then(function (r) {
       if (mine !== state.seq) return;
       state.pending = null;
       busyBtn(find.submit, false, '', 'Найти');
@@ -243,6 +260,7 @@
 
   /* Номер набирается как «123 456»; на шестой цифре карта ищется сама. */
   find.input.addEventListener('input', function () {
+    state.sig = '';   // номер набирают руками: подписи QR у него нет
     var d = digits(find.input.value).slice(0, 6);
     var v = d.length > 3 ? d.slice(0, 3) + ' ' + d.slice(3) : d;
     if (find.input.value !== v) find.input.value = v;
@@ -269,11 +287,13 @@
   CAM_ERRORS.SecurityError = CAM_ERRORS.NotAllowedError;
   CAM_ERRORS.OverconstrainedError = CAM_ERRORS.NotFoundError;
 
-  /* «HINKBERI:465480» -> «465480»; чужой код -> null. */
+  /* «HINKBERI:465480:ПОДПИСЬ» -> { no: «465480», sig: «ПОДПИСЬ» }; старый код без подписи тоже читается
+     (тогда сервер скажет, что QR не проверен); чужой код -> null. */
   function cardFromCode(text) {
     text = String(text || '').trim().toUpperCase();
     var rest = text.indexOf(RULE.qr) === 0 ? text.slice(RULE.qr.length) : '';
-    return /^\d{6}$/.test(rest) ? rest : null;
+    var m = /^(\d{6})(?::([A-Z2-7]{10}))?$/.exec(rest);
+    return m ? { no: m[1], sig: m[2] || '' } : null;
   }
 
   function camSay(msg, warn) {
@@ -365,15 +385,16 @@
   }
   function camSeen(texts) {
     if (!texts.length) return;
-    var no = null;
-    texts.some(function (t) { no = cardFromCode(t); return !!no; });
-    if (!no) {
+    var code = null;
+    texts.some(function (t) { code = cardFromCode(t); return !!code; });
+    if (!code) {
       camSay('Это не QR-код карты ХинкБери. Попросите гостя открыть на сайте окно «Ваши баллы».', true);
       return;
     }
     if (navigator.vibrate) navigator.vibrate(40);
     camStop();
-    find.input.value = no.slice(0, 3) + ' ' + no.slice(3);
+    find.input.value = code.no.slice(0, 3) + ' ' + code.no.slice(3);   // без события input: подпись не стирается
+    state.sig = code.sig;
     lookUp();
   }
 
@@ -474,14 +495,15 @@
     busyBtn(check.submit, true, 'Проводим…', 'Провести чек');
     paintCheck();
     var mine = state.seq;
-    U.api({ action: 'cashier_txn', token: token(), card: g.number, amount: n.amount, spend: n.spend, op: state.op })
+    U.api({ action: 'cashier_txn', token: token(), card: g.number, amount: n.amount, spend: n.spend, op: state.op,
+            sig: state.sig || undefined })
       .then(function (r) {
         state.busy = false;
         busyBtn(check.submit, false, '', 'Провести чек');
         if (mine !== state.seq) return;
         state.last = { op: state.op, amount: n.amount, spend: n.spend };
         state.op = null;
-        state.guest = r.guest;
+        state.guest = sameGuest(r.guest);
         paintGuest(false);
         paintDone(r.done);
       }, function (er) {
@@ -526,7 +548,7 @@
       state.busy = false;
       if (mine !== state.seq) return;
       state.last = null;
-      state.guest = r.guest;
+      state.guest = sameGuest(r.guest);
       paintGuest(false);
       /* Возвращаем форму с теми же числами: кассир исправляет ошибку и проводит заново. */
       done.hidden = true;

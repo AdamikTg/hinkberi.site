@@ -78,7 +78,7 @@
 
   function keep(r) {
     if (r.token) write(TOKEN, r.token);
-    write(ME, { name: r.user.name, number: r.user.number, points: r.user.points });
+    write(ME, { name: r.user.name, number: r.user.number, points: r.user.points, qr: r.user.qr });
     return r.user;
   }
   var store = {
@@ -248,12 +248,16 @@
     me.querySelector('[data-me-no]').textContent = digitsOf(u.number);
     /* QR-код карты рисуется в браузере (assets/js/qr.js) и только при смене номера. Если qr.js
        не загрузился, остаётся номер: кассир наберёт его руками. */
-    var qr = me.querySelector('[data-me-qr]');
-    if (window.HBQR && qr.getAttribute('data-for') !== String(u.number)) {
-      qr.innerHTML = window.HBQR.svg(RULE.qr + u.number, 'QR-код карты ' + u.number);
-      qr.setAttribute('data-for', u.number);
+    /* С 11.10.2026 строку для QR даёт сервер: «HINKBERI:номер:подпись». Подпись знает только сервер,
+       поэтому по одному номеру карты такой код не подделать. Старый ответ без подписи: код из номера. */
+    var qr = me.querySelector('[data-me-qr]'), payload = u.qr || RULE.qr + u.number;
+    if (window.HBQR && qr.getAttribute('data-for') !== payload) {
+      try {
+        qr.innerHTML = window.HBQR.svg(payload, 'QR-код карты ' + u.number);
+        qr.setAttribute('data-for', payload);
+      } catch (e) { qr.innerHTML = ''; }   // строка не для QR: остаётся номер, кассир наберёт его
     }
-    qr.hidden = !window.HBQR;
+    qr.hidden = !window.HBQR || !qr.firstChild;
     /* У копии из браузера истории нет: раздел появляется, когда ответит сервер. */
     me.querySelector('.me-ops').hidden = !ops;
     if (!ops) return;

@@ -1,7 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Главная -->
   <url>
     <loc>https://hinkberi.site/</loc>
-    <lastmod>2026-10-11</lastmod>
+    <lastmod>2026-10-14</lastmod>
   </url>
+  <!-- Политика обработки персональных данных: https://hinkberi.site/политика -->
+  <url>
+    <loc>https://hinkberi.site/%D0%BF%D0%BE%D0%BB%D0%B8%D1%82%D0%B8%D0%BA%D0%B0</loc>
+    <lastmod>2026-10-14</lastmod>
+  </url>
+  <!-- Согласие на обработку персональных данных: https://hinkberi.site/согласие -->
+  <url>
+    <loc>https://hinkberi.site/%D1%81%D0%BE%D0%B3%D0%BB%D0%B0%D1%81%D0%B8%D0%B5</loc>
+    <lastmod>2026-10-14</lastmod>
+  </url>
+  <!-- Не входят: разделы (/меню, /онас, /отзывы и др.) это мгновенный переход на главную;
+       /кассир закрыт от поиска (noindex). -->
 </urlset>

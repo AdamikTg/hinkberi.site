@@ -528,6 +528,65 @@ window.HB = {
   );
 })();
 
+/* menu-mint-20261113: все прежние фото меню в едином стиле на зелёных карточках. */
+(function () {
+  var photos = {
+  "burger-chicken-2": "burger-chicken-2-mint-20261113",
+  "burger-beef-2": "burger-beef-2-mint-20261113",
+  "caesar-roll": "caesar-roll-mint-20261113",
+  "strips-roll": "strips-roll-mint-20261113",
+  "shawarma-chicken": "shawarma-chicken-mint-20261113",
+  "shaverma": "shaverma-mint-20261113",
+  "sandwich-ham-turkey": "sandwich-ham-turkey-mint-20261113",
+  "wings": "wings-mint-20261113",
+  "wings-10": "wings-10-mint-20261113",
+  "wings-15": "wings-15-mint-20261113",
+  "strips-3": "strips-3-mint-20261113",
+  "strips-5": "strips-5-mint-20261113",
+  "strips-7": "strips-7-mint-20261113",
+  "nuggets-4": "nuggets-4-mint-20261113",
+  "nuggets-6": "nuggets-6-mint-20261113",
+  "nuggets-12": "nuggets-12-mint-20261113",
+  "cheese-sticks-3": "cheese-sticks-3-mint-20261113",
+  "cheese-sticks-6": "cheese-sticks-6-mint-20261113",
+  "cheese-sticks-12": "cheese-sticks-12-mint-20261113",
+  "fries-medium": "fries-medium-mint-20261113",
+  "fries-large": "fries-large-mint-20261113",
+  "wedges-box": "wedges-box-mint-20261113",
+  "wedges-tray": "wedges-tray-mint-20261113",
+  "mojito": "mojito-mint-20261113",
+  "mojito-strawberry": "mojito-strawberry-mint-20261113",
+  "lemonade-mango": "lemonade-mango-mint-20261113",
+  "lemonade-red-mary": "lemonade-red-mary-mint-20261113",
+  "natakhtari-tarkhun": "natakhtari-tarkhun-mint-20261113",
+  "natakhtari-pear": "natakhtari-pear-mint-20261113",
+  "milkshake": "milkshake-mint-20261113",
+  "espresso": "espresso-mint-20261113",
+  "americano": "americano-mint-20261113",
+  "americano-300": "americano-300-mint-20261113",
+  "cappuccino": "cappuccino-mint-20261113",
+  "cappuccino-300": "cappuccino-300-mint-20261113",
+  "latte": "latte-mint-20261113",
+  "flat-white": "flat-white-mint-20261113",
+  "cocoa": "cocoa-mint-20261113",
+  "cocoa-300": "cocoa-300-mint-20261113",
+  "iced-latte": "iced-latte-mint-20261113",
+  "iced-urbech": "iced-urbech-mint-20261113",
+  "cold-brew": "cold-brew-mint-20261113",
+  "bumble": "bumble-mint-20261113",
+  "raf": "raf-mint-20261113",
+  "raf-urbech": "raf-urbech-mint-20261113",
+  "shot": "shot-mint-20261113"
+};
+  window.HB.menu.forEach(function (category) {
+    var items = category.items || category.groups.reduce(function (all, group) { return all.concat(group.items); }, []);
+    items.forEach(function (item) {
+      if (photos[item.photo]) item.photo = photos[item.photo];
+      (item.options || []).forEach(function (option) { if (photos[option.photo]) option.photo = photos[option.photo]; });
+    });
+  });
+})();
+
 /* Вспомогательные функции, общие для всех вариантов. */
 window.HBU = {
   price: function (n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' ₽'; },

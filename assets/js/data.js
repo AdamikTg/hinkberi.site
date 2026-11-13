@@ -162,6 +162,372 @@ window.HB = {
   ]
 };
 
+/* menu-yandex-20261113: новые позиции и цены из меню Яндекс Карт; прежние позиции сохранены. */
+(function () {
+  var added = {
+  "snacks": [
+    {
+      "name": "Креветки в кляре",
+      "photo": "shrimp-batter-20261113",
+      "price": 350,
+      "desc": "75 г"
+    },
+    {
+      "name": "Луковые кольца",
+      "photo": "onion-rings-20261113",
+      "price": 330,
+      "desc": "60 г"
+    },
+    {
+      "name": "Рыбные палочки",
+      "photo": "fish-sticks-20261113",
+      "price": 320,
+      "desc": "90 г"
+    }
+  ],
+  "bakery": [
+    {
+      "name": "Ватрушка с творогом",
+      "photo": "vatrushka-20261113",
+      "price": 300,
+      "desc": "120 г"
+    },
+    {
+      "name": "Круассан миндальный",
+      "photo": "croissant-almond-20261113",
+      "price": 300,
+      "desc": "120 г"
+    },
+    {
+      "name": "Круассан с Nutella",
+      "photo": "croissant-nutella-20261113",
+      "price": 300,
+      "desc": "130 г"
+    },
+    {
+      "name": "Круассан с фисташкой",
+      "photo": "croissant-pistachio-20261113",
+      "price": 300,
+      "desc": "120 г"
+    },
+    {
+      "name": "Круассан с шоколадом",
+      "photo": "croissant-chocolate-20261113",
+      "price": 300,
+      "desc": "120 г"
+    },
+    {
+      "name": "Орешки со сгущёнкой",
+      "photo": "nuts-condensed-milk-20261113",
+      "price": 300,
+      "desc": "130 г"
+    },
+    {
+      "name": "Печенье лимонное",
+      "photo": "cookie-lemon-20261113",
+      "price": 300,
+      "desc": "85 г"
+    },
+    {
+      "name": "Печенье овсяное",
+      "photo": "cookie-oat-20261113",
+      "price": 300,
+      "desc": "85 г"
+    },
+    {
+      "name": "Сочник с творогом",
+      "photo": "sochnik-20261113",
+      "price": 300,
+      "desc": "120 г"
+    },
+    {
+      "name": "Улитка с изюмом",
+      "photo": "raisin-swirl-20261113",
+      "price": 300,
+      "desc": "120 г"
+    },
+    {
+      "name": "Улитка с корицей",
+      "photo": "cinnamon-swirl-20261113",
+      "price": 100,
+      "desc": "130 г"
+    },
+    {
+      "name": "Маковая булочка",
+      "photo": "poppy-bun-20261113",
+      "price": 300,
+      "desc": "120 г"
+    }
+  ],
+  "chudu": [
+    {
+      "name": "Чуду ботишал",
+      "photo": "chudu-botishal-20261113",
+      "price": 400,
+      "desc": "200 г"
+    },
+    {
+      "name": "Чуду даргинское с курицей и картошкой",
+      "photo": "chudu-chicken-potato-20261113",
+      "price": 800,
+      "desc": "1 кг"
+    },
+    {
+      "name": "Чуду даргинское с мясом и картошкой",
+      "photo": "chudu-meat-potato-20261113",
+      "price": 890,
+      "desc": "1 кг"
+    },
+    {
+      "name": "Чуду даргинское с творогом",
+      "photo": "chudu-dargin-curd-20261113",
+      "price": 950,
+      "desc": "1 кг"
+    },
+    {
+      "name": "Чуду с зеленью",
+      "photo": "chudu-greens-20261113",
+      "price": 420,
+      "desc": "200 г"
+    },
+    {
+      "name": "Чуду с мясом",
+      "photo": "chudu-meat-20261113",
+      "price": 450,
+      "desc": "200 г"
+    },
+    {
+      "name": "Чуду с творогом",
+      "photo": "chudu-curd-20261113",
+      "price": 390,
+      "desc": "200 г"
+    }
+  ],
+  "desserts": [
+    {
+      "name": "Медовик",
+      "photo": "medovik-20261113",
+      "price": 400,
+      "desc": "150 г"
+    },
+    {
+      "name": "Меренговый десерт",
+      "photo": "meringue-dessert-20261113",
+      "price": 280,
+      "desc": "150 г"
+    },
+    {
+      "name": "Трайфл Сникерс",
+      "photo": "trifle-snickers-20261113",
+      "price": 400,
+      "desc": "150 г"
+    },
+    {
+      "name": "Трайфл с вишней",
+      "photo": "trifle-cherry-20261113",
+      "price": 450,
+      "desc": "150 г"
+    }
+  ],
+  "breakfast": [
+    {
+      "name": "Блины с варёной сгущёнкой",
+      "photo": "blini-condensed-milk-20261113",
+      "price": 380,
+      "desc": "220 г"
+    },
+    {
+      "name": "Блины с курицей и грибами",
+      "photo": "blini-chicken-mushroom-20261113",
+      "price": 450,
+      "desc": "220 г"
+    },
+    {
+      "name": "Блины с мясом",
+      "photo": "blini-meat-20261113",
+      "price": 470,
+      "desc": "220 г"
+    },
+    {
+      "name": "Сырники",
+      "photo": "syrniki-20261113",
+      "price": 300,
+      "desc": "180 г"
+    }
+  ],
+  "sauces": [
+    {
+      "name": "Соус Барбекю",
+      "photo": "sauce-bbq-20261113",
+      "price": 30,
+      "desc": "25 г"
+    },
+    {
+      "name": "Соус Кетчуп",
+      "photo": "sauce-ketchup-20261113",
+      "price": 30,
+      "desc": "25 г"
+    },
+    {
+      "name": "Соус Кисло-Сладкий",
+      "photo": "sauce-sweet-sour-20261113",
+      "price": 55,
+      "desc": "25 г"
+    },
+    {
+      "name": "Соус Сырный",
+      "photo": "sauce-cheese-20261113",
+      "price": 30,
+      "desc": "25 г"
+    }
+  ],
+  "coffee": [
+    {
+      "name": "Бамбл с гранатом",
+      "photo": "bumble-pomegranate-20261113",
+      "price": 200,
+      "desc": "300 мл"
+    },
+    {
+      "name": "Колд брю с гранатом",
+      "photo": "cold-brew-pomegranate-20261113",
+      "price": 200,
+      "desc": "300 мл"
+    },
+    {
+      "name": "Колд брю с кизилом",
+      "photo": "cold-brew-dogwood-20261113",
+      "price": 200,
+      "desc": "300 мл"
+    },
+    {
+      "name": "Колд брю с малиной",
+      "photo": "cold-brew-raspberry-20261113",
+      "price": 300,
+      "desc": "300 мл"
+    },
+    {
+      "name": "Колд брю с черникой",
+      "photo": "cold-brew-blueberry-20261113",
+      "price": 300,
+      "desc": "300 мл"
+    }
+  ],
+  "drinks": [
+    {
+      "name": "RC кола",
+      "photo": "rc-cola-20261113",
+      "price": 250,
+      "desc": "1 л"
+    },
+    {
+      "name": "Кока-кола",
+      "photo": "coca-cola-250-20261113",
+      "price": 170,
+      "desc": "250 мл"
+    },
+    {
+      "name": "Менди персик",
+      "photo": "mendi-peach-20261113",
+      "price": 220
+    },
+    {
+      "name": "Могох абрикосовый натуральный сок",
+      "photo": "mogokh-apricot-20261113",
+      "price": 270,
+      "desc": "1 л"
+    },
+    {
+      "name": "Могох персиковый натуральный сок",
+      "photo": "mogokh-peach-20261113",
+      "price": 270,
+      "desc": "500 мл"
+    },
+    {
+      "name": "Могох сливовый натуральный сок",
+      "photo": "mogokh-plum-20261113",
+      "price": 270,
+      "desc": "1 л"
+    },
+    {
+      "name": "Могох яблочный натуральный сок",
+      "photo": "mogokh-apple-20261113",
+      "price": 270,
+      "desc": "1 л"
+    },
+    {
+      "name": "Мохито Гранатовый",
+      "photo": "mojito-pomegranate-20261113",
+      "price": 180,
+      "desc": "450 мл"
+    },
+    {
+      "name": "Напиток Кинза Апельсин",
+      "photo": "kinza-orange-20261113",
+      "price": 180,
+      "desc": "320 мл"
+    },
+    {
+      "name": "Напиток Кинза Кола",
+      "photo": "kinza-cola-20261113",
+      "price": 180,
+      "desc": "320 мл"
+    },
+    {
+      "name": "Напиток Кинза Спрайт",
+      "photo": "kinza-sprite-20261113",
+      "price": 180,
+      "desc": "320 мл"
+    },
+    {
+      "name": "Напиток Кинза кола без сахара",
+      "photo": "kinza-cola-zero-20261113",
+      "price": 180,
+      "desc": "320 мл"
+    },
+    {
+      "name": "Напиток кинза виноград",
+      "photo": "kinza-grape-20261113",
+      "price": 180,
+      "desc": "320 мл"
+    },
+    {
+      "name": "Напиток кинза гранат",
+      "photo": "kinza-pomegranate-20261113",
+      "price": 180,
+      "desc": "320 мл"
+    },
+    {
+      "name": "Сок Рич Персик",
+      "photo": "rich-peach-20261113",
+      "price": 150,
+      "desc": "200 мл"
+    },
+    {
+      "name": "Сок Рич Яблоко",
+      "photo": "rich-apple-20261113",
+      "price": 150,
+      "desc": "200 мл"
+    }
+  ]
+};
+  function category(id) { return window.HB.menu.find(function(c) { return c.id === id; }); }
+  category('закуски').items.push.apply(category('закуски').items, added.snacks);
+  var drinks = category('напитки');
+  var mojito = added.drinks.find(function(i) { return i.photo === 'mojito-pomegranate-20261113'; });
+  drinks.groups.find(function(g) { return g.title === 'Лимонады'; }).items.push(mojito);
+  drinks.groups.push({title:'Напитки в бутылках и банках', items:added.drinks.filter(function(i) { return i !== mojito; })});
+  var cold = category('кофе').groups.find(function(g) { return g.title === 'Холодный'; });
+  cold.items.push.apply(cold.items, added.coffee);
+  var chudu = category('чуду'); delete chudu.soon; delete chudu.note; chudu.items = added.chudu;
+  window.HB.menu.push(
+    {id:'выпечка',title:'Выпечка',items:added.bakery},
+    {id:'завтраки',title:'Завтраки',items:added.breakfast},
+    {id:'десерты',title:'Десерты',items:added.desserts},
+    {id:'соусы',title:'Соусы',items:added.sauces}
+  );
+})();
+
 /* Вспомогательные функции, общие для всех вариантов. */
 window.HBU = {
   price: function (n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' ₽'; },

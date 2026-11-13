@@ -8,6 +8,37 @@
      здесь рисуем её заново из data.js, чтобы правка data.js сразу была видна и без выкладки. */
   document.querySelector('[data-menu]').innerHTML = R.menu();
 
+  /* Загружаем следующие две карточки до горизонтального перелистывания.
+     Далёкие по вертикали разделы остаются с обычной отложенной загрузкой. */
+  if ('IntersectionObserver' in window) {
+    function loadAhead(rail) {
+      var bounds = rail.getBoundingClientRect();
+      var card = rail.querySelector('.card');
+      var ahead = card ? (card.offsetWidth + 16) * 2 : rail.clientWidth;
+      [].forEach.call(rail.querySelectorAll('.card-photo img[loading="lazy"]'), function (img) {
+        var rect = img.getBoundingClientRect();
+        if (rect.right >= bounds.left - ahead / 2 && rect.left <= bounds.right + ahead) {
+          img.decoding = 'async';
+          img.loading = 'eager';
+        }
+      });
+    }
+    var nearMenu = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) { loadAhead(entry.target); nearMenu.unobserve(entry.target); }
+      });
+    }, { rootMargin: '700px 0px' });
+    [].forEach.call(document.querySelectorAll('.rail'), function (rail) {
+      nearMenu.observe(rail);
+      var pending = false;
+      rail.addEventListener('scroll', function () {
+        if (pending) return;
+        pending = true;
+        requestAnimationFrame(function () { pending = false; loadAhead(rail); });
+      }, { passive: true });
+    });
+  }
+
   var strip = document.querySelector('[data-strip]');
   strip.innerHTML = R.chips();
 

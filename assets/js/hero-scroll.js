@@ -37,7 +37,7 @@
           lastPaint = -1; wake(); pump();
         };
         im.onerror = function () { delete pending[i]; active--; pump(); };
-        im.src = base + 'f' + String(i + 1).padStart(3, '0') + '.webp';
+        im.src = base + 'f' + String(i + 1).padStart(3, '0') + (i < 20 ? '-clean' : '') + '.webp';
       })(queue.shift());
     }
     function near(i) {
@@ -46,20 +46,14 @@
       return best;
     }
     function draw() {
-      var lo = near(Math.floor(current)), hi = near(Math.ceil(current));
-      if (lo < 0) return;
-      var mix = lo === hi ? 0 : clamp((current - lo) / (hi - lo), 0, 1);
-      var signature = lo + ':' + hi + ':' + Math.round(mix * 100);
-      if (signature === lastPaint) return; lastPaint = signature;
+      var frame = near(Math.round(current));
+      if (frame < 0 || frame === lastPaint) return;
+      lastPaint = frame;
       var side = Math.min(canvas.width, canvas.height);
       var x = (canvas.width - side) / 2, y = (canvas.height - side) / 2;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.globalAlpha = 1 - mix; ctx.drawImage(frames[lo], x, y, side, side); used[lo] = ++clock;
-      if (mix) {
-        ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = mix;
-        ctx.drawImage(frames[hi], x, y, side, side); used[hi] = ++clock;
-      }
       ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+      ctx.drawImage(frames[frame], x, y, side, side); used[frame] = ++clock;
     }
     function size() {
       var w = canvas.clientWidth, h = canvas.clientHeight; if (!w || !h) return;

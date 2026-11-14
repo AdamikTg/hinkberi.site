@@ -89,12 +89,41 @@
   window.HBScrolled(document.querySelector('.top-sentinel'));
   window.HBHeroHeader(document.querySelector('.hero'));   // шапка держится, пока собирается бургер
 
-  window.HBBurger({
-    section: document.querySelector('.hero'),
-    canvas: document.querySelector('.burger-canvas'),
-    base: 'assets/burger/',
-    zoom: window.innerWidth < 720 ? 1.18 : 1.08
-  });
+  /* Ролик владельца: прокрутка управляет сборкой, вне экрана нет декодирования. */
+  (function () {
+    var section = document.querySelector('.hero');
+    var video = section.querySelector('.hero-video');
+    var source = video.querySelector('source');
+    var motion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    var visible = true, queued = false;
+    function update() {
+      queued = false;
+      if (!visible || motion.matches || !isFinite(video.duration) || video.seeking) return;
+      var distance = section.offsetHeight - window.innerHeight;
+      var progress = distance > 0 ? -section.getBoundingClientRect().top / distance : 0;
+      var target = Math.max(0, Math.min(1, progress)) * Math.max(0, video.duration - 0.05);
+      if (Math.abs(video.currentTime - target) > 1 / 24) video.currentTime = target;
+    }
+    function schedule() {
+      if (!queued) { queued = true; requestAnimationFrame(update); }
+    }
+    function preference() {
+      if (motion.matches) {
+        source.removeAttribute('src'); video.load();
+      } else {
+        source.src = source.getAttribute('data-src'); video.preload = 'auto'; video.load();
+      }
+    }
+    video.addEventListener('loadeddata', schedule);
+    video.addEventListener('seeked', schedule);
+    window.addEventListener('scroll', schedule, { passive: true });
+    window.addEventListener('resize', schedule);
+    if (motion.addEventListener) motion.addEventListener('change', preference);
+    if ('IntersectionObserver' in window) new IntersectionObserver(function (entries) {
+      visible = entries[0].isIntersecting; if (visible) schedule();
+    }).observe(section);
+    preference();
+  })();
 
   window.HBMenuNav({
     menu: document.querySelector('.menu'),

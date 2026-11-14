@@ -587,6 +587,46 @@ window.HB = {
   });
 })();
 
+/* drinks-detail-20261113: фото газировки и чая, отдельные вкусы молочных коктейлей по 0,5 л. */
+(function () {
+  var drinks = window.HB.menu.find(function (category) { return category.id === 'напитки'; });
+  var soda = drinks.groups.find(function (group) { return group.title === 'Газировка и чай'; });
+  var photos = {
+  "Кока-кола": "soda-coca-cola-20261113",
+  "Фрустайл лимон-лайм": "soda-frustyle-lemon-lime-20261113",
+  "Фрустайл апельсин": "soda-frustyle-orange-20261113",
+  "Липтон лимон": "tea-lipton-lemon-20261113",
+  "Липтон зелёный": "tea-lipton-green-20261113"
+};
+  delete soda.compact;
+  soda.items.forEach(function (item) { if (photos[item.name]) item.photo = photos[item.name]; });
+  var milkshakes = drinks.groups.find(function (group) { return group.title === 'Молочные коктейли'; });
+  var price = milkshakes.items[0].price;
+  var flavors = [
+  {
+    "name": "Молочный коктейль клубнично-черничный",
+    "photo": "shake-strawberry-blueberry-20261113"
+  },
+  {
+    "name": "Молочный коктейль клубничный",
+    "photo": "shake-strawberry-20261113"
+  },
+  {
+    "name": "Молочный коктейль бананово-клубничный",
+    "photo": "shake-banana-strawberry-20261113"
+  },
+  {
+    "name": "Молочный коктейль ванильный",
+    "photo": "shake-vanilla-20261113"
+  },
+  {
+    "name": "Молочный коктейль шоколадный",
+    "photo": "shake-chocolate-20261113"
+  }
+];
+  milkshakes.items = flavors.map(function (flavor) { return {name:flavor.name,desc:'0,5 л',photo:flavor.photo,price:price}; });
+})();
+
 /* Вспомогательные функции, общие для всех вариантов. */
 window.HBU = {
   price: function (n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' ₽'; },

@@ -89,10 +89,11 @@
   window.HBScrolled(document.querySelector('.top-sentinel'));
   window.HBHeroHeader(document.querySelector('.hero'));   // шапка держится, пока собирается бургер
 
-  window.HBScrollBurger({
+  window.HBBurger({
     section: document.querySelector('.hero'),
     canvas: document.querySelector('.burger-canvas'),
-    base: 'assets/burger-square-v3/'
+    base: 'assets/burger/',
+    zoom: window.innerWidth < 720 ? 1.18 : 1.08
   });
 
   window.HBMenuNav({

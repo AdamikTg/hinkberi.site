@@ -592,14 +592,34 @@ window.HB = {
   var drinks = window.HB.menu.find(function (category) { return category.id === 'напитки'; });
   var soda = drinks.groups.find(function (group) { return group.title === 'Газировка и чай'; });
   var photos = {
-  "Кока-кола": "soda-coca-cola-20261113",
-  "Фрустайл лимон-лайм": "soda-frustyle-lemon-lime-20261113",
-  "Фрустайл апельсин": "soda-frustyle-orange-20261113",
-  "Липтон лимон": "tea-lipton-lemon-20261113",
-  "Липтон зелёный": "tea-lipton-green-20261113"
+  "Кока-кола": [
+    "coca-cola-400-novol-20261114",
+    "coca-cola-500-novol-20261114"
+  ],
+  "Фрустайл лимон-лайм": [
+    "frustyle-lemon-lime-400-novol-20261114",
+    "frustyle-lemon-lime-500-novol-20261114"
+  ],
+  "Фрустайл апельсин": [
+    "frustyle-orange-400-novol-20261114",
+    "frustyle-orange-500-novol-20261114"
+  ],
+  "Липтон лимон": [
+    "lipton-lemon-400-novol-20261114",
+    "lipton-lemon-500-novol-20261114"
+  ],
+  "Липтон зелёный": [
+    "lipton-green-400-novol-20261114",
+    "lipton-green-500-novol-20261114"
+  ]
 };
   delete soda.compact;
-  soda.items.forEach(function (item) { if (photos[item.name]) item.photo = photos[item.name]; });
+  soda.items.forEach(function (item) {
+    var pictures = photos[item.name];
+    if (!pictures) return;
+    item.photo = pictures[0];
+    item.options.forEach(function (option, index) { option.photo = pictures[index]; });
+  });
   var milkshakes = drinks.groups.find(function (group) { return group.title === 'Молочные коктейли'; });
   var price = milkshakes.items[0].price;
   var flavors = [
